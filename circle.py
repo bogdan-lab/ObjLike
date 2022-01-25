@@ -40,6 +40,7 @@ class CircleSegment:
             CircleSegment._connect_lyers(prev_layer_points, curr_layer_points,
                                          self.points, self.faces)
             prev_layer_points = curr_layer_points
+        self.outer_layer_points = tuple(curr_layer_points)
 
     def __init__(self, phi_from: Angle, phi_to: Angle, radius: float,
                  layer_num: int) -> None:
@@ -70,7 +71,10 @@ class Circle:
                                           self.radius, self.layer_num))
         self.points = PointCollection()
         self.faces = []
+        self.outer_layer_points = []
         for seg in segments:
+            for i in range(len(seg.outer_layer_points)-1):
+                self.outer_layer_points.append(seg.outer_layer_points[i])
             for seg_face in seg.faces:
                 self.faces.append(
                   ((self.points.add_point(seg.points.get_point(seg_face[0]))),
