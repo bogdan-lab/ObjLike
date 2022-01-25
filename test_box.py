@@ -57,48 +57,48 @@ def test_save_to_file(tmp_path, cube):
 
 
 def test_rotate_around_z_180(cube):
-    initial_pts = cube.points.index_to_point
+    initial_pts = cube.points.point_to_index
     cube.rotate_z(Angle(np.pi))
-    res_pts = cube.points.index_to_point
+    res_pts = cube.points.point_to_index
     for (ip, rp) in zip(initial_pts, res_pts):
         assert all(np.isclose(rp.real, (-ip.real[0], -ip.real[1], ip.real[2])))
 
 
 def test_rotate_around_z_90(cube):
-    initial_pts = cube.points.index_to_point
+    initial_pts = cube.points.point_to_index
     cube.rotate_z(Angle(-np.pi/2))
-    res_pts = cube.points.index_to_point
+    res_pts = cube.points.point_to_index
     for (ip, rp) in zip(initial_pts, res_pts):
         assert all(np.isclose(rp.real, (ip.real[1], -ip.real[0], ip.real[2])))
 
 
 def test_rotate_around_y_180(cube):
-    initial_pts = cube.points.index_to_point
+    initial_pts = cube.points.point_to_index
     cube.rotate_y(Angle(np.pi))
-    res_pts = cube.points.index_to_point
+    res_pts = cube.points.point_to_index
     for (ip, rp) in zip(initial_pts, res_pts):
         assert all(np.isclose(rp.real, (-ip.real[0], ip.real[1], -ip.real[2])))
 
 
 def test_rotate_around_y_90(cube):
-    initial_pts = cube.points.index_to_point
+    initial_pts = cube.points.point_to_index
     cube.rotate_y(Angle(-np.pi/2))
-    res_pts = cube.points.index_to_point
+    res_pts = cube.points.point_to_index
     for (ip, rp) in zip(initial_pts, res_pts):
         assert all(np.isclose(rp.real, (-ip.real[2], ip.real[1], ip.real[0])))
 
 
 def test_rotate_around_x_180(cube):
-    initial_pts = cube.points.index_to_point
+    initial_pts = cube.points.point_to_index
     cube.rotate_x(Angle(np.pi))
-    res_pts = cube.points.index_to_point
+    res_pts = cube.points.point_to_index
     for (ip, rp) in zip(initial_pts, res_pts):
         assert all(np.isclose(rp.real, (ip.real[0], -ip.real[1], -ip.real[2])))
 
 
 def test_rotate_around_x_90(cube):
-    initial_pts = cube.points.index_to_point
+    initial_pts = cube.points.point_to_index
     cube.rotate_x(Angle(-np.pi/2))
-    res_pts = cube.points.index_to_point
+    res_pts = cube.points.point_to_index
     for (ip, rp) in zip(initial_pts, res_pts):
         assert all(np.isclose(rp.real, (ip.real[0], ip.real[2], -ip.real[1])))

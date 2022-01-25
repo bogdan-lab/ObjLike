@@ -117,3 +117,17 @@ def test_move_point_collection_inplace():
     expected.add_point(Point(2, 4, 3))
     assert res == expected
     assert collection == res
+
+
+def test_get_point():
+    collection = PointCollection()
+    collection.add_point(Point(0, 0, 0))
+    collection.add_point(Point(1, 0, 0))
+    collection.add_point(Point(1, 2, 0))
+    collection.add_point(Point(1, 2, 3))
+    assert collection.get_points_num() == 4
+    assert collection.get_point(0) == Point(0, 0, 0)
+    assert collection.get_point(1) == Point(1, 0, 0)
+    assert collection.get_point(2) == Point(1, 2, 0)
+    assert collection.get_point(3) == Point(1, 2, 3)
+

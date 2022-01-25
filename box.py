@@ -96,7 +96,7 @@ class Box:
     def rotate_z(self, angle: Angle) -> 'Box':
         '''Rotate entire object around Z axis'''
         new_pc = PointCollection()
-        for p in self.points.index_to_point:
+        for p in self.points.point_to_index:
             x = np.cos(angle.value)*p.real[0] - np.sin(angle.value)*p.real[1]
             y = np.sin(angle.value)*p.real[0] + np.cos(angle.value)*p.real[1]
             z = p.real[2]
@@ -107,7 +107,7 @@ class Box:
     def rotate_y(self, angle: Angle) -> 'Box':
         '''Rotate entire object around Y axis'''
         new_pc = PointCollection()
-        for p in self.points.index_to_point:
+        for p in self.points.point_to_index:
             x = np.cos(angle.value)*p.real[0] + np.sin(angle.value)*p.real[2]
             y = p.real[1]
             z = -np.sin(angle.value)*p.real[0] + np.cos(angle.value)*p.real[2]
@@ -118,7 +118,7 @@ class Box:
     def rotate_x(self, angle: Angle) -> 'Box':
         '''Rotate entire object around X axis'''
         new_pc = PointCollection()
-        for p in self.points.index_to_point:
+        for p in self.points.point_to_index:
             x = p.real[0]
             y = np.cos(angle.value)*p.real[1] - np.sin(angle.value)*p.real[2]
             z = np.sin(angle.value)*p.real[1] + np.cos(angle.value)*p.real[2]

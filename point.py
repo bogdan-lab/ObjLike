@@ -63,21 +63,19 @@ class PointCollection:
     def __init__(self) -> None:
         self.next_index = 0
         self.point_to_index = {}
-        self.index_to_point = []
 
     def __eq__(self, other: 'PointCollection') -> bool:
         return (self.next_index == other.next_index and
-                self.point_to_index == other.point_to_index and
-                self.index_to_point == other.index_to_point)
+                self.point_to_index == other.point_to_index)
 
     def __str__(self) -> str:
-        return str(self.index_to_point)
+        return str(self.point_to_index)
 
     def __repr__(self) -> str:
         return str(self)
 
     def get_points_num(self) -> int:
-        return len(self.index_to_point)
+        return len(self.point_to_index)
 
     def add_point(self, p: Point) -> int:
         if not isinstance(p, Point):
@@ -85,21 +83,19 @@ class PointCollection:
         if p not in self.point_to_index:
             self.point_to_index[p] = self.next_index
             self.next_index += 1
-            self.index_to_point.append(p)
         return self.point_to_index[p]
 
     def get_point(self, index: int) -> Point:
-        return self.index_to_point[index]
+        return list(self.point_to_index)[index]
 
     def move(self, x: float = 0, y: float = 0, z: float = 0,
              inplace: bool = False) -> 'PointCollection':
         new_pc = PointCollection()
-        for p in self.index_to_point:
+        for p in self.point_to_index:
             new_pc.add_point(p.move(x, y, z, inplace=False))
         if inplace:
-            self.index_to_point = new_pc.index_to_point
             self.point_to_index = new_pc.point_to_index
         return new_pc
 
     def get_file_str_content(self) -> List[str]:
-        return [f"p {p.get_real_string()}" for p in self.index_to_point]
+        return [f"p {p.get_real_string()}" for p in self.point_to_index]
