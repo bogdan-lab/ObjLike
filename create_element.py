@@ -9,6 +9,7 @@ from point import Point
 from box import Box
 from angle import Angle
 from circle import CircleSegment, Circle
+from cylinder import Cylinder
 
 
 # List of elements I want to be able to create:
@@ -114,6 +115,14 @@ def create_circle(args):
         plot_result(circle.get_real_points_as_tuples(), circle.faces)
 
 
+def create_cylinder(args):
+    cylinder = Cylinder(origin=Point(args.x0, args.y0, args.z0),
+                        radius=args.radius, height=args.height,
+                        layer_num=args.layer_num)
+    if not args.no_plot:
+        plot_result(cylinder.get_real_points_as_tuples(), cylinder.faces)
+
+
 def add_box_parser(subparsers, parent_prasers):
     box_parser = subparsers.add_parser(
             "box",
@@ -164,6 +173,23 @@ def add_circle_parser(subparsers, parent_parsers):
     circle_parser.set_defaults(callback=create_circle)
 
 
+def add_cylinder_parser(subparsers, parent_parsers):
+    cylinder_parser = subparsers.add_parser(
+            "cylinder",
+            parents=parent_parsers,
+            help="Basic cylinder element",
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter
+            )
+    cylinder_parser.add_argument('-r', '--radius', type=float, required=True,
+                                 help="Radius of the cylinder bases")
+    cylinder_parser.add_argument('-t', '--height', type=float, required=True,
+                                 help="Cylinder height")
+    cylinder_parser.add_argument('-ln', '--layer_num', type=int, required=True,
+                                 help="Number of mesh layers in the"
+                                 "cylinder bases")
+    cylinder_parser.set_defaults(callback=create_cylinder)
+
+
 # TODO default argument of filename has to be for each element unique
 def setup_parser(parser):
     parent_parser = argparse.ArgumentParser(add_help=False)
@@ -198,6 +224,7 @@ def setup_parser(parser):
     add_box_parser(subparsers, [parent_parser])
     add_segment_parser(subparsers, [parent_parser])
     add_circle_parser(subparsers, [parent_parser])
+    add_cylinder_parser(subparsers, [parent_parser])
 
 
 def main():
