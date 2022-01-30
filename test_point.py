@@ -1,6 +1,7 @@
 import numpy as np
 from point import Point, PointCollection, FaceCollection
 from angle import Angle
+import pytest
 
 
 def test_convert_spher_point_to_real():
@@ -239,3 +240,28 @@ def test_face_collection_accept_transformation_rotate_only():
     assert all(np.isclose(real_points[0], (0, 0, -1)))
     assert all(np.isclose(real_points[1], (1, 0, 0)))
     assert all(np.isclose(real_points[2], (0, -1, 0)))
+
+
+def test_face_collection_save_to_file(tmp_path):
+    test = FaceCollection()
+    test.add_face(Point(1, 0, 0), Point(0, 1, 0), Point(0, 0, 1))
+    test.add_face(Point(1, 0, 0), Point(0, 1, 0), Point(0, 1, 1))
+    test.move(x=1, y=2, z=3)
+    filename = tmp_path / "test.obj_like"
+    test.save_to_file(filename)
+    with open(filename, 'r') as fin:
+        data = fin.read().split('\n')
+    assert len(data) == 10
+    assert list(map(float, data[0].split()[1:])) == [1, 0, 0]
+    assert list(map(float, data[1].split()[1:])) == [0, 1, 0]
+    assert list(map(float, data[2].split()[1:])) == [0, 0, 1]
+    assert list(map(float, data[3].split()[1:])) == [0, 1, 1]
+    assert all(['sp' in line for line in data[:4]])
+    assert list(map(float, data[4].split()[1:])) == [2, 2, 3]
+    assert list(map(float, data[5].split()[1:])) == [1, 3, 3]
+    assert list(map(float, data[6].split()[1:])) == [1, 2, 4]
+    assert list(map(float, data[7].split()[1:])) == [1, 3, 4]
+    assert all(['wp' in line for line in data[4:8]])
+    assert list(map(int, data[8].split()[1:])) == [0, 1, 2]
+    assert list(map(int, data[9].split()[1:])) == [0, 1, 3]
+    assert all(['s ' in line for line in data[8:]])

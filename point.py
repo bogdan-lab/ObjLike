@@ -196,4 +196,16 @@ class FaceCollection:
             moved_points.add_point(mp)
         return moved_points
 
-# TODO def save_to_file(...):
+    def save_to_file(self, filename: str) -> None:
+        '''Save current collection into given file.
+        File is rewritten. Two groups of point collections are saved:
+        self object points (sp) and transformed points (wp).
+        '''
+        obj_pts_str = [f"sp {p.real[0]} {p.real[1]} {p.real[2]}"
+                       for p in self.points.point_to_index]
+        face_str = [f"s {fc[0]} {fc[1]} {fc[2]}" for fc in self.faces]
+        moved_points = self.get_transformed_points()
+        mvd_pts_str = [f"wp {p.real[0]} {p.real[1]} {p.real[2]}"
+                       for p in moved_points.point_to_index]
+        with open(filename, 'w') as fout:
+            fout.write('\n'.join(obj_pts_str + mvd_pts_str + face_str))
