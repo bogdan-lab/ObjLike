@@ -260,3 +260,31 @@ class FaceCollection:
                        for p in moved_points.point_to_index]
         with open(filename, 'w') as fout:
             fout.write('\n'.join(obj_pts_str + mvd_pts_str + face_str))
+
+    @staticmethod
+    def merge_collections(lhs: 'FaceCollection',
+                          rhs: 'FaceCollection') -> 'FaceCollection':
+        '''Creates FaceCollection which contains all faces from both
+        collections. Both input collections should have same transformation
+        settings.
+        '''
+        if lhs.moves != rhs.moves:
+            raise ValueError(f"Cannot merge collections with different move"
+                             "transformations: "
+                             "lhs = {lhs.moves}, rhs = {rhs.moves}")
+        if lhs.rotations != rhs.rotations:
+            raise ValueError(f"Cannot merge collections with different"
+                             "rotateions: lhs = {lhs.rotations}, "
+                             "rhs = {rhs.rotations}")
+        new_col = FaceCollection()
+        for f in lhs.faces:
+            new_col.add_face(lhs.points.get_point(f[0]),
+                             lhs.points.get_point(f[1]),
+                             lhs.points.get_point(f[2]))
+        for f in rhs.faces:
+            new_col.add_face(rhs.points.get_point(f[0]),
+                             rhs.points.get_point(f[1]),
+                             rhs.points.get_point(f[2]))
+        new_col.moves = lhs.moves
+        new_col.rotations = lhs.rotations
+        return new_col

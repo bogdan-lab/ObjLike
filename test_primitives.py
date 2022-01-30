@@ -265,6 +265,20 @@ def test_face_collection_save_to_file(tmp_path):
     assert all(['s ' in line for line in data[8:]])
 
 
+def test_merge_collections():
+    lhs = FaceCollection()
+    lhs.add_face(Point(1, 0, 0), Point(0, 1, 0), Point(0, 0, 1))
+    rhs = FaceCollection()
+    rhs.add_face(Point(1, 0, 0), Point(0, 1, 0), Point(0, 1, 1))
+    res = FaceCollection.merge_collections(lhs, rhs)
+    assert len(res.faces) == 2
+    assert len(res.points.point_to_index) == 4
+    assert Point(1, 0, 0) in res.points.point_to_index
+    assert Point(0, 1, 0) in res.points.point_to_index
+    assert Point(0, 0, 1) in res.points.point_to_index
+    assert Point(0, 1, 1) in res.points.point_to_index
+
+
 def test_angle_creation():
     assert Angle(0).value == 0
     assert Angle(1).value == 1
