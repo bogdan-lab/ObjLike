@@ -1,5 +1,5 @@
 import numpy as np
-from point import Point, PointCollection
+from point import Point, PointCollection, FaceCollection
 from angle import Angle
 
 
@@ -188,3 +188,54 @@ def test_get_point():
     assert collection.get_point(2) == Point(1, 2, 0)
     assert collection.get_point(3) == Point(1, 2, 3)
 
+
+def test_face_collection_add_face():
+    test = FaceCollection()
+    test.add_face(Point(1, 0, 0), Point(0, 1, 0), Point(0, 0, 1))
+    assert len(test.faces) == 1
+    assert len(test.points.point_to_index) == 3
+    assert (0, 1, 2) in test.faces
+    test.add_face(Point(1, 0, 0), Point(0, 1, 0), Point(0, 1, 1))
+    assert len(test.faces) == 2
+    assert len(test.points.point_to_index) == 4
+    assert (0, 1, 3) in test.faces
+    test.add_face(Point(1, 0, 0), Point(0, 1, 0), Point(0, 0, 1))
+    assert len(test.faces) == 2
+
+
+def test_face_collection_accept_transformation_move_only():
+    test = FaceCollection()
+    test.add_face(Point(1, 0, 0), Point(0, 1, 0), Point(0, 0, 1))
+    test.move(x=1, y=2, z=3)
+    assert test.moves == {'x': 1, 'y': 2, 'z': 3}
+    test.move(x=5)
+    assert test.moves == {'x': 6, 'y': 2, 'z': 3}
+    assert test.points.point_to_index == {Point(1, 0, 0): 0,
+                                          Point(0, 1, 0): 1,
+                                          Point(0, 0, 1): 2}
+    test.accept_transformations()
+    assert test.moves == {'x': 0, 'y': 0, 'z': 0}
+    assert test.points.point_to_index == {Point(7, 2, 3): 0,
+                                          Point(6, 3, 3): 1,
+                                          Point(6, 2, 4): 2}
+
+
+def test_face_collection_accept_transformation_rotate_only():
+    test = FaceCollection()
+    test.add_face(Point(1, 0, 0), Point(0, 1, 0), Point(0, 0, 1))
+    test.rotate(x=Angle(np.pi/2), y=Angle(np.pi/2), z=Angle(np.pi/2))
+    assert test.rotations == {'x': Angle(np.pi/2), 'y': Angle(np.pi/2),
+                              'z': Angle(np.pi/2)}
+    test.rotate(x=Angle(np.pi/2))
+    assert test.rotations == {'x': Angle(np.pi), 'y': Angle(np.pi/2),
+                              'z': Angle(np.pi/2)}
+    assert test.points.point_to_index == {Point(1, 0, 0): 0,
+                                          Point(0, 1, 0): 1,
+                                          Point(0, 0, 1): 2}
+    test.accept_transformations()
+    assert test.rotations == {'x': Angle(0), 'y': Angle(0), 'z': Angle(0)}
+    real_points = [p.real for p in test.points.point_to_index]
+    assert len(real_points) == 3
+    assert all(np.isclose(real_points[0], (0, 0, -1)))
+    assert all(np.isclose(real_points[1], (1, 0, 0)))
+    assert all(np.isclose(real_points[2], (0, -1, 0)))

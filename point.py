@@ -145,14 +145,14 @@ class FaceCollection:
 
     def __init__(self) -> None:
         self.points = PointCollection()
-        self.faces = []
+        self.faces = set()
         self.moves = {'x': 0, 'y': 0, 'z': 0}
         self.rotations = {'x': Angle(0), 'y': Angle(0), 'z': Angle(0)}
 
     def add_face(self, p1: Point, p2: Point, p3: Point) -> None:
-        self.faces.append((self.points.add_point(p1),
-                           self.points.add_point(p2),
-                           self.points.add_point(p3)))
+        self.faces.add((self.points.add_point(p1),
+                        self.points.add_point(p2),
+                        self.points.add_point(p3)))
 
     def move(self, x: float = 0, y: float = 0,
              z: float = 0) -> 'FaceCollection':
@@ -173,17 +173,27 @@ class FaceCollection:
             points collection. After this it clears all queued transformations
             and instance continue its existance as if transformed points are
             its self points. Note that all rotations are done before all
-            move transformations!
+            move transformations. Also rotations are done in the following
+            order x-> y -> z
         '''
-        # TODO perform inplace points transformations
-        pass
+        self.points = self.get_transformed_points()
+        self.moves = {'x': 0, 'y': 0, 'z': 0}
+        self.rotations = {'x': Angle(0), 'y': Angle(0), 'z': Angle(0)}
 
-    def get_transformed_points(self):
+    def get_transformed_points(self) -> PointCollection:
         '''Returns transformed PointCollection without affecting instance
         state. Transformed points order is the same as initial points order.
         Note that all rotations are done before all move transformations.
+        Also rotations are done in the following order x-> y -> z
         '''
-        # TODO do stuff
-        pass
+        moved_points = PointCollection()
+        for p in self.points.point_to_index:
+            mp = p.rotate_x(self.rotations['x'], inplace=False)
+            mp.rotate_y(self.rotations['y'], inplace=True)
+            mp.rotate_z(self.rotations['z'], inplace=True)
+            mp.move(x=self.moves['x'], y=self.moves['y'], z=self.moves['z'],
+                    inplace=True)
+            moved_points.add_point(mp)
+        return moved_points
 
 # TODO def save_to_file(...):
