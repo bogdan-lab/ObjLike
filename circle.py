@@ -1,6 +1,5 @@
 import numpy as np
-from point import Point, PointCollection
-from angle import Angle
+from primitives import Point, PointCollection, Angle
 from typing import Tuple, List
 
 FaceType = List[Tuple[int, int, int]]

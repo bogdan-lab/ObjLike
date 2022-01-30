@@ -1,6 +1,5 @@
 from box import Box
-from point import Point
-from angle import Angle
+from primitives import Point, Angle
 import pytest
 import numpy as np
 

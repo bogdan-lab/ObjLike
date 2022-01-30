@@ -1,5 +1,5 @@
 from circle import Circle
-from point import Point, PointCollection
+from primitives import Point, PointCollection
 from typing import List, Tuple
 
 

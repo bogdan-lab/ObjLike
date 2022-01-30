@@ -1,6 +1,5 @@
-from point import Point, PointCollection
+from primitives import Point, PointCollection, Angle
 from typing import List, Tuple
-from angle import Angle
 import numpy as np
 
 # TODO make Box realization through 6 planes with separate plane class

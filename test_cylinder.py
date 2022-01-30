@@ -1,5 +1,5 @@
 from cylinder import Cylinder
-from point import Point
+from primitives import Point
 import numpy as np
 
 

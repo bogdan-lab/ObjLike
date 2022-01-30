@@ -1,6 +1,5 @@
 import numpy as np
-from angle import Angle
-from point import Point
+from primitives import Point, Angle
 from circle import CircleSegment, Circle
 
 
