@@ -54,6 +54,46 @@ class Point:
             self.spherical = new_point.spherical
         return new_point
 
+    def rotate_x(self, angle: Angle, inplace: bool = False) -> 'Point':
+        '''Rotates point around x axis. Rotation is performed according to
+           the right hand rule
+        '''
+        x = self.real[0]
+        y = np.cos(angle.value)*self.real[1] - np.sin(angle.value)*self.real[2]
+        z = np.sin(angle.value)*self.real[1] + np.cos(angle.value)*self.real[2]
+        new_point = Point(x, y, z)
+        if inplace:
+            self.real = new_point.real
+            self.spherical = new_point.spherical
+        return new_point
+
+    def rotate_y(self, angle: Angle, inplace: bool = False) -> 'Point':
+        '''Rotates point around y axis. Rotation is performed according to
+           the right hand rule
+        '''
+        x = np.cos(angle.value)*self.real[0] + np.sin(angle.value)*self.real[2]
+        y = self.real[1]
+        z = (-np.sin(angle.value)*self.real[0]
+             + np.cos(angle.value)*self.real[2])
+        new_point = Point(x, y, z)
+        if inplace:
+            self.real = new_point.real
+            self.spherical = new_point.spherical
+        return new_point
+
+    def rotate_z(self, angle: Angle, inplace: bool = False) -> 'Point':
+        '''Rotates point around z axis. Rotation is performed according to
+           the right hand rule
+        '''
+        x = np.cos(angle.value)*self.real[0] - np.sin(angle.value)*self.real[1]
+        y = np.sin(angle.value)*self.real[0] + np.cos(angle.value)*self.real[1]
+        z = self.real[2]
+        new_point = Point(x, y, z)
+        if inplace:
+            self.real = new_point.real
+            self.spherical = new_point.spherical
+        return new_point
+
     def get_real_string(self) -> str:
         return f"{self.real[0]} {self.real[1]} {self.real[2]}"
 
@@ -99,3 +139,51 @@ class PointCollection:
 
     def get_file_str_content(self) -> List[str]:
         return [f"p {p.get_real_string()}" for p in self.point_to_index]
+
+
+class FaceCollection:
+
+    def __init__(self) -> None:
+        self.points = PointCollection()
+        self.faces = []
+        self.moves = {'x': 0, 'y': 0, 'z': 0}
+        self.rotations = {'x': Angle(0), 'y': Angle(0), 'z': Angle(0)}
+
+    def add_face(self, p1: Point, p2: Point, p3: Point) -> None:
+        self.faces.append((self.points.add_point(p1),
+                           self.points.add_point(p2),
+                           self.points.add_point(p3)))
+
+    def move(self, x: float = 0, y: float = 0,
+             z: float = 0) -> 'FaceCollection':
+        self.moves['x'] += x
+        self.moves['y'] += y
+        self.moves['z'] += z
+        return self
+
+    def rotate(self, x: Angle = Angle(0), y: Angle = Angle(0),
+               z: Angle = Angle(0)) -> 'FaceCollection':
+        self.rotations['x'] += x
+        self.rotations['y'] += y
+        self.rotations['z'] += z
+        return self
+
+    def accept_transformations(self) -> None:
+        '''This method applies saved transformations into current
+            points collection. After this it clears all queued transformations
+            and instance continue its existance as if transformed points are
+            its self points. Note that all rotations are done before all
+            move transformations!
+        '''
+        # TODO perform inplace points transformations
+        pass
+
+    def get_transformed_points(self):
+        '''Returns transformed PointCollection without affecting instance
+        state. Transformed points order is the same as initial points order.
+        Note that all rotations are done before all move transformations.
+        '''
+        # TODO do stuff
+        pass
+
+# TODO def save_to_file(...):

@@ -66,6 +66,63 @@ def test_move_point():
     assert point == Point(2, 3, 4)
 
 
+def test_point_rotate_x():
+    point = Point(1, 0, 0)
+    assert all([Point(1, 0, 0) == point.rotate_x(Angle(alpha))
+               for alpha in np.linspace(0, 5*np.pi, 100)])
+    point = Point(0, 1, 0)
+    point.rotate_x(Angle(np.pi/2), inplace=True)
+    expected = Point(0, 0, 1)
+    assert all(np.isclose(point.real, expected.real))
+    point = Point(0, 1, 0)
+    point.rotate_x(Angle(-np.pi/2), inplace=True)
+    expected = Point(0, 0, -1)
+    assert all(np.isclose(point.real, expected.real))
+    point = Point(0, 1, 0)
+    res = point.rotate_x(Angle(np.pi/4), inplace=False)
+    expected = Point(0, np.sqrt(2)/2, np.sqrt(2)/2)
+    assert point == Point(0, 1, 0)
+    assert all(np.isclose(res.real, expected.real))
+
+
+def test_point_rotate_y():
+    point = Point(0, 1, 0)
+    assert all([Point(0, 1, 0) == point.rotate_y(Angle(alpha))
+               for alpha in np.linspace(0, 5*np.pi, 100)])
+    point = Point(1, 0, 0)
+    point.rotate_y(Angle(np.pi/2), inplace=True)
+    expected = Point(0, 0, -1)
+    assert all(np.isclose(point.real, expected.real))
+    point = Point(1, 0, 0)
+    point.rotate_y(Angle(-np.pi/2), inplace=True)
+    expected = Point(0, 0, 1)
+    assert all(np.isclose(point.real, expected.real))
+    point = Point(0, 0, 1)
+    res = point.rotate_y(Angle(np.pi/4), inplace=False)
+    expected = Point(np.sqrt(2)/2, 0, np.sqrt(2)/2)
+    assert point == Point(0, 0, 1)
+    assert all(np.isclose(res.real, expected.real))
+
+
+def test_point_rotate_z():
+    point = Point(0, 0, 1)
+    assert all([Point(0, 0, 1) == point.rotate_z(Angle(alpha))
+               for alpha in np.linspace(0, 5*np.pi, 100)])
+    point = Point(0, 1, 0)
+    point.rotate_z(Angle(np.pi/2), inplace=True)
+    expected = Point(-1, 0, 0)
+    assert all(np.isclose(point.real, expected.real))
+    point = Point(0, 1, 0)
+    point.rotate_z(Angle(-np.pi/2), inplace=True)
+    expected = Point(1, 0, 0)
+    assert all(np.isclose(point.real, expected.real))
+    point = Point(0, 1, 0)
+    res = point.rotate_z(Angle(np.pi/4), inplace=False)
+    expected = Point(-np.sqrt(2)/2, np.sqrt(2)/2, 0)
+    assert point == Point(0, 1, 0)
+    assert all(np.isclose(res.real, expected.real))
+
+
 def test_collection_adding_points():
     collection = PointCollection()
     assert collection.add_point(Point(0, 0, 0)) == 0
