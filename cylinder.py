@@ -7,20 +7,25 @@ class Cylinder:
 
     def _build_cylinder(self) -> None:
         bot = Circle(self.origin, self.radius, self.layer_num)
-        top = copy(bot)
+        top = Circle(self.origin, self.radius, self.layer_num)
         moved_points = PointCollection()
         for p in top.points.point_to_index:
             moved_points.add_point(
                     Point(p.real[0], p.real[1], p.real[2] + self.height))
         top.points = moved_points
+        moved_outer = []
+        for p in top.outer_layer_points:
+            moved_outer.append(Point(p.real[0], p.real[1],
+                                     p.real[2] + self.height))
+        top.outer_layer_points = moved_outer
         side_points = list(zip(bot.outer_layer_points, top.outer_layer_points))
         self.points = PointCollection()
         self.faces = []
         for i in range(len(side_points)-1):
             self.faces.append(
-                    (self.points.add_point(side_points[i][0]),
+                    (self.points.add_point(side_points[i][1]),
                      self.points.add_point(side_points[i+1][0]),
-                     self.points.add_point(side_points[i][1])))
+                     self.points.add_point(side_points[i][0])))
             self.faces.append(
                     (self.points.add_point(side_points[i+1][0]),
                      self.points.add_point(side_points[i+1][1]),
