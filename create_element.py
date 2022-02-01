@@ -5,12 +5,11 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
-from point import Point
+from primitives import Point, Angle
 from box import Box
-from angle import Angle
 from circle import CircleSegment, Circle
 from cylinder import Cylinder
-
+from collection_2d import Plane
 
 # List of elements I want to be able to create:
 # 1) Box - using triangles only
@@ -123,6 +122,28 @@ def create_cylinder(args):
         plot_result(cylinder.get_real_points_as_tuples(), cylinder.faces)
 
 
+def create_plane(args):
+    plane = Plane(width=args.width, height=args.height)
+    if not args.no_plot:
+        points = [(p.real[0], p.real[1], p.real[2])
+                  for p in plane.description.get_transformed_points()
+                  .point_to_index]
+        plot_result(points, plane.description.faces)
+
+
+def add_plane_parser(subparsers, parent_parsers):
+    parser = subparsers.add_parser(
+            "plane",
+            parents=parent_parsers,
+            help="General plane element",
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('-w', '--width', type=float, required=True,
+                        help="Plane width along X coordinate")
+    parser.add_argument('-t', '--height', type=float, required=True,
+                        help="Plane height along Y coordinate")
+    parser.set_defaults(callback=create_plane)
+
+
 def add_box_parser(subparsers, parent_prasers):
     box_parser = subparsers.add_parser(
             "box",
@@ -221,6 +242,7 @@ def setup_parser(parser):
 
     subparsers = parser.add_subparsers(
             help="type of the element which will be plotted")
+    add_plane_parser(subparsers, [parent_parser])
     add_box_parser(subparsers, [parent_parser])
     add_segment_parser(subparsers, [parent_parser])
     add_circle_parser(subparsers, [parent_parser])
