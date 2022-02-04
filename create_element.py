@@ -7,9 +7,9 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 from primitives import Point, Angle
 from box import Box
-from circle import CircleSegment, Circle
+from circle import Circle
 from cylinder import Cylinder
-from collection_2d import Plane
+from collection_2d import Plane, CircleSegment
 
 # List of elements I want to be able to create:
 # 1) Box - using triangles only
@@ -98,13 +98,13 @@ def create_box(args):
 
 
 def create_segment(args):
-    # TODO add effect for origin
     segment = CircleSegment(Angle(args.phi_lo), Angle(args.phi_hi),
                             args.radius, args.layer_num)
-    # TODO orientation effect
     if not args.no_plot:
-        plot_result(segment.get_real_points_as_tuples(), segment.faces)
-    # TODO save into file
+        points = [(p.real[0], p.real[1], p.real[2])
+                  for p in segment.description.get_transformed_points()
+                  .point_to_index]
+        plot_result(points, segment.description.faces)
 
 
 def create_circle(args):
