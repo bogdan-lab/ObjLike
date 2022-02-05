@@ -1,4 +1,4 @@
-from itertools import tee
+from itertools import tee, islice
 from typing import List, Tuple
 import numpy as np
 from primitives import Point, FaceCollection, Angle
@@ -60,47 +60,39 @@ class CircleSegment:
                            for phi in angles]
             CircleSegment._add_layer(faces, prev_points, curr_points)
             prev_points = curr_points
-        return faces, tuple(curr_points)
+        return faces
 
     def __init__(self, phi_from: Angle, phi_to: Angle, radius: float,
                  layer_num: int) -> None:
         if phi_to <= phi_from:
             raise ValueError("Incorrect range for the circcle segment.")
-        self.phi_from = phi_from
-        self.phi_to = phi_to
-        self.radius = radius
-        self.layer_num = layer_num
         self.description = FaceCollection()
-        self.outer_layer_points = tuple()
         quant_num = int(np.ceil((phi_to - phi_from).value / (2*np.pi / 3)))
         angles = Angle.linspace(phi_from, phi_to, quant_num+1, endpoint=True)
         for lo, hi in pairwise(angles):
-            add_descr, add_out = self._build_segment_quant(
-                    lo, hi, radius, layer_num)
+            add_descr = self._build_segment_quant(lo, hi, radius, layer_num)
             self.description = FaceCollection.merge(
                     self.description, add_descr)
-            self.outer_layer_points += tuple(p for p in add_out
-                                             if p not in
-                                             self.outer_layer_points)
 
 
 class Circle:
     '''Circle in xy plane with center in (0, 0, 0)'''
 
+    @staticmethod
+    def _get_outer_points(points, pts_num) -> List[Point]:
+        return sorted(
+                islice(
+                    sorted(points, key=lambda p: p.spherical[0], reverse=True),
+                    pts_num), key=lambda p: p.spherical[1])
+
     def __init__(self, radius: float, layer_num: int) -> None:
-        self.radius = radius
-        self.layer_num = layer_num
         self.description = FaceCollection()
-        self.outer_layer_points = tuple()
         angles = Angle.linspace(Angle(0), Angle(2*np.pi), 7, endpoint=True)
         for lo, hi in pairwise(angles):
-            add_descr, add_out = CircleSegment._build_segment_quant(
+            add_descr = CircleSegment._build_segment_quant(
                     lo, hi, radius, layer_num)
             self.description = FaceCollection.merge(
                     self.description, add_descr)
-            self.outer_layer_points += tuple(p for p in add_out
-                                             if p not in
-                                             self.outer_layer_points)
 
 
 class Tube:
@@ -136,16 +128,17 @@ class Cylinder:
 
     def __init__(self, radius: float, height: float, r_layer_num: int,
                  h_layer_num: int) -> None:
-        bot = Circle(radius, r_layer_num)
-        bot_descr = bot.description
+        bot_descr = Circle(radius, r_layer_num).description
         top_base = Circle(radius, r_layer_num).description.move(z=height)
         top_base.accept_transformations()
         heights = np.linspace(0, height, h_layer_num+1, endpoint=True)
+        outer_points = Circle._get_outer_points(
+                                        list(bot_descr.points.point_to_index), 6*r_layer_num)
         point_layers = []
         for h in heights:
             point_layers.append([p.move(z=h)
                                  for p in
-                                 _last_cycled(bot.outer_layer_points)])
+                                 _last_cycled(outer_points)])
         self.description = FaceCollection()
         for prev, curr in pairwise(point_layers):
             Tube._connect_layers(self.description, prev, curr)
@@ -157,10 +150,11 @@ class Cylinder:
 class Cone:
     '''Simple cone parallel to Z axis with base circle center in (0, 0, 0)'''
     def __init__(self, radius: float, height: float, r_layer_num: int) -> None:
-        bot = Circle(radius, r_layer_num)
+        bot_descr = Circle(radius, r_layer_num).description
         top = Point(0, 0, height)
         self.description = FaceCollection()
-        for pl, pr in pairwise(_last_cycled(bot.outer_layer_points)):
+        outer_points = Circle._get_outer_points(
+                                        list(bot_descr.points.point_to_index), 6*r_layer_num)
+        for pl, pr in pairwise(_last_cycled(outer_points)):
             self.description.add_face(pr, top, pl)
-        self.description = FaceCollection.merge(self.description,
-                                                bot.description)
+        self.description = FaceCollection.merge(self.description, bot_descr)

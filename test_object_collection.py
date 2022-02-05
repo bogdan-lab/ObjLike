@@ -9,11 +9,6 @@ def test_segment_creation_1_layer():
     assert len(seg.description.faces) == 1
     assert (0, 1, 2) in seg.description.faces
     assert seg.description.points.get_points_num() == 3
-    out_l = seg.outer_layer_points
-    assert len(out_l) == 2
-    assert all([np.isclose(p.spherical[0], seg.radius) for p in out_l])
-    assert all([out_l[i].spherical[1] < out_l[i+1].spherical[1]
-                for i in range(len(out_l)-1)])
 
 
 def test_segment_creation_2_layer():
@@ -21,11 +16,6 @@ def test_segment_creation_2_layer():
                         radius=4, layer_num=2)
     assert len(seg.description.faces) == 4
     assert seg.description.points.get_points_num() == 6
-    out_l = seg.outer_layer_points
-    assert len(out_l) == 3
-    assert all([np.isclose(p.spherical[0], seg.radius) for p in out_l])
-    assert all([out_l[i].spherical[1] < out_l[i+1].spherical[1]
-                for i in range(len(out_l)-1)])
 
 
 def test_segment_creation_3_layer():
@@ -33,27 +23,18 @@ def test_segment_creation_3_layer():
                         radius=9, layer_num=3)
     assert len(seg.description.faces) == 9
     assert seg.description.points.get_points_num() == 10
-    out_l = seg.outer_layer_points
-    assert len(out_l) == 4
-    assert all([np.isclose(p.spherical[0], seg.radius) for p in out_l])
-    assert all([out_l[i].spherical[1] < out_l[i+1].spherical[1]
-                for i in range(len(out_l)-1)])
 
 
 def test_create_circle_from_segment_1_layer():
     circle = Circle(radius=5, layer_num=1)
-    assert circle.radius == 5
-    assert circle.layer_num == 1
     assert len(circle.description.faces) == 6
     assert circle.description.points.get_points_num() == 7
-    assert len(circle.outer_layer_points) == 6
 
 
 def test_create_circle_from_segment_3_layer():
     circle = Circle(radius=9, layer_num=3)
     assert len(circle.description.faces) == 54
     assert circle.description.points.get_points_num() == 37
-    assert len(circle.outer_layer_points) == 18
 
 
 def test_tube_creation_1_layer():
