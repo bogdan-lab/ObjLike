@@ -1,5 +1,5 @@
 import numpy as np
-from collection_2d import CircleSegment
+from collection_2d import CircleSegment, Circle
 from primitives import Angle
 
 
@@ -38,3 +38,19 @@ def test_segment_creation_3_layer():
     assert all([np.isclose(p.spherical[0], seg.radius) for p in out_l])
     assert all([out_l[i].spherical[1] < out_l[i+1].spherical[1]
                 for i in range(len(out_l)-1)])
+
+
+def test_create_circle_from_segment_1_layer():
+    circle = Circle(radius=5, layer_num=1)
+    assert circle.radius == 5
+    assert circle.layer_num == 1
+    assert len(circle.description.faces) == 6
+    assert circle.description.points.get_points_num() == 7
+    assert len(circle.outer_layer_points) == 6
+
+
+def test_create_circle_from_segment_3_layer():
+    circle = Circle(radius=9, layer_num=3)
+    assert len(circle.description.faces) == 54
+    assert circle.description.points.get_points_num() == 37
+    assert len(circle.outer_layer_points) == 18

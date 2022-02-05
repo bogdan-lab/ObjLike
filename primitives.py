@@ -1,6 +1,7 @@
 import numpy as np
 from typing import Tuple, List, Iterable
 
+
 class Angle:
     '''Simple class that guaranties that stored value will be between (0, 2*pi)
     '''
@@ -262,8 +263,8 @@ class FaceCollection:
             fout.write('\n'.join(obj_pts_str + mvd_pts_str + face_str))
 
     @staticmethod
-    def merge_collections(lhs: 'FaceCollection',
-                          rhs: 'FaceCollection') -> 'FaceCollection':
+    def merge(lhs: 'FaceCollection',
+              rhs: 'FaceCollection') -> 'FaceCollection':
         '''Creates FaceCollection which contains all faces from both
         collections. Both input collections should have same transformation
         settings.

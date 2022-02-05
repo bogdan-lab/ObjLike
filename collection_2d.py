@@ -1,5 +1,5 @@
-from itertools import zip_longest, tee
-from typing import List
+from itertools import tee
+from typing import List, Tuple
 import numpy as np
 from primitives import Point, FaceCollection, Angle
 
@@ -25,41 +25,74 @@ def pairwise(iterable):
 
 
 class CircleSegment:
+    '''Circle segment in xy plane with center in (0, 0, 0).
+    If one need to create CircleSegment(0, 2*np.pi) one should use Circle
+    class instead
+    '''
 
     @staticmethod
-    def _layer_parameters(layer_num: int, radius: float):
+    def _layer_iterator(layer_num: int, radius: float):
         '''Generates point num on layer and layer radius as iterable'''
         for i in range(layer_num):
             yield (i + 2, (i + 1)*radius / layer_num)
 
-    def _connect_layers(self, prev: List[Point], curr: List[Point]) -> None:
+    @staticmethod
+    def _add_layer(description, prev: List[Point], curr: List[Point]) -> None:
         for (cl, cr), (pl, pr) in zip(pairwise(curr), pairwise(prev + [None])):
-            self.description.add_face(cl, pl, cr)
+            description.add_face(cl, pl, cr)
             if pr:
-                self.description.add_face(pr, cr, pl)
+                description.add_face(pr, cr, pl)
 
-    def _build_mesh_in_segment(self) -> None:
-        self.description = FaceCollection()
-        prev_layer_points = [Point(0, 0, 0)]
-        for pts_num, r in self._layer_parameters(self.layer_num, self.radius):
-            angles = Angle.linspace(self.phi_from, self.phi_to, pts_num,
-                                    endpoint=True)
-            curr_layer_points = [
+    @staticmethod
+    def _build_segment_quant(phi_from: Angle, phi_to: Angle, radius: float,
+                             layer_num: int) -> (FaceCollection, Tuple[Point]):
+        faces = FaceCollection()
+        prev_points = [Point(0, 0, 0)]
+        for pts_num, r in CircleSegment._layer_iterator(layer_num, radius):
+            angles = Angle.linspace(phi_from, phi_to, pts_num, endpoint=True)
+            curr_points = [
                     Point.from_spherical(r, phi, Angle(np.pi/2))
                     for phi in angles]
-            self._connect_layers(prev_layer_points, curr_layer_points)
-            prev_layer_points = curr_layer_points
-        self.outer_layer_points = tuple(curr_layer_points)
+            CircleSegment._add_layer(faces, prev_points, curr_points)
+            prev_points = curr_points
+        return faces, tuple(curr_points)
 
     def __init__(self, phi_from: Angle, phi_to: Angle, radius: float,
                  layer_num: int) -> None:
+        if phi_to <= phi_from:
+            raise ValueError("Incorrect range for the circcle segment.")
         self.phi_from = phi_from
         self.phi_to = phi_to
         self.radius = radius
         self.layer_num = layer_num
-        self._build_mesh_in_segment()
+        self.description = FaceCollection()
+        self.outer_layer_points = tuple()
+        quant_num = int(np.ceil((phi_to - phi_from).value / (2*np.pi / 3)))
+        angles = Angle.linspace(phi_from, phi_to, quant_num+1, endpoint=True)
+        for lo, hi in pairwise(angles):
+            add_descr, add_out = self._build_segment_quant(
+                    lo, hi, radius, layer_num)
+            self.description = FaceCollection.merge(
+                    self.description, add_descr)
+            self.outer_layer_points += tuple(p for p in add_out
+                                             if p not in
+                                             self.outer_layer_points)
 
 
+class Circle:
+    '''Circle in xy plane with center in (0, 0, 0)'''
 
-
-# TODO move here Circle CircleSegment
+    def __init__(self, radius: float, layer_num: int) -> None:
+        self.radius = radius
+        self.layer_num = layer_num
+        self.description = FaceCollection()
+        self.outer_layer_points = tuple()
+        angles = Angle.linspace(Angle(0), Angle(2*np.pi), 7, endpoint=True)
+        for lo, hi in pairwise(angles):
+            add_descr, add_out = CircleSegment._build_segment_quant(
+                    lo, hi, radius, layer_num)
+            self.description = FaceCollection.merge(
+                    self.description, add_descr)
+            self.outer_layer_points += tuple(p for p in add_out
+                                             if p not in
+                                             self.outer_layer_points)
