@@ -1,4 +1,4 @@
-from circle import Circle
+from collection_2d import Circle
 from primitives import Point, PointCollection
 from typing import List, Tuple
 

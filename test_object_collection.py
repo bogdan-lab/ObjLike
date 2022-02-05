@@ -1,5 +1,5 @@
 import numpy as np
-from collection_2d import CircleSegment, Circle
+from collection_2d import CircleSegment, Circle, Tube
 from primitives import Angle
 
 
@@ -54,3 +54,39 @@ def test_create_circle_from_segment_3_layer():
     assert len(circle.description.faces) == 54
     assert circle.description.points.get_points_num() == 37
     assert len(circle.outer_layer_points) == 18
+
+
+def test_tube_creation_1_layer():
+    tube = Tube(radius=15, height=5, r_layer_num=1, h_layer_num=1)
+    assert tube.description.points.get_points_num() == 12
+    assert len(tube.description.faces) == 12
+    assert sum(np.isclose(p.real[2], 0)
+               for p in tube.description.points.point_to_index) == 6
+    assert sum(np.isclose(p.real[2], 5)
+               for p in tube.description.points.point_to_index) == 6
+
+
+def test_tube_creation_3_layer():
+    tube = Tube(radius=15, height=9, h_layer_num=3, r_layer_num=1)
+    assert len(tube.description.faces) == 36
+    assert tube.description.points.get_points_num() == 24
+    assert sum(np.isclose(p.real[2], 0)
+               for p in tube.description.points.point_to_index) == 6
+    assert sum(np.isclose(p.real[2], 3)
+               for p in tube.description.points.point_to_index) == 6
+    assert sum(np.isclose(p.real[2], 6)
+               for p in tube.description.points.point_to_index) == 6
+    assert sum(np.isclose(p.real[2], 9)
+               for p in tube.description.points.point_to_index) == 6
+
+
+def test_tube_creation_2_layer():
+    tube = Tube(radius=15, height=6, h_layer_num=2, r_layer_num=2)
+    assert len(tube.description.faces) == 48
+    assert tube.description.points.get_points_num() == 36
+    assert sum(np.isclose(p.real[2], 0)
+               for p in tube.description.points.point_to_index) == 12
+    assert sum(np.isclose(p.real[2], 3)
+               for p in tube.description.points.point_to_index) == 12
+    assert sum(np.isclose(p.real[2], 6)
+               for p in tube.description.points.point_to_index) == 12

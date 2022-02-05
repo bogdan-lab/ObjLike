@@ -50,9 +50,8 @@ class CircleSegment:
         prev_points = [Point(0, 0, 0)]
         for pts_num, r in CircleSegment._layer_iterator(layer_num, radius):
             angles = Angle.linspace(phi_from, phi_to, pts_num, endpoint=True)
-            curr_points = [
-                    Point.from_spherical(r, phi, Angle(np.pi/2))
-                    for phi in angles]
+            curr_points = [Point.from_spherical(r, phi, Angle(np.pi/2))
+                           for phi in angles]
             CircleSegment._add_layer(faces, prev_points, curr_points)
             prev_points = curr_points
         return faces, tuple(curr_points)
@@ -96,3 +95,30 @@ class Circle:
             self.outer_layer_points += tuple(p for p in add_out
                                              if p not in
                                              self.outer_layer_points)
+
+
+class Tube:
+    '''Tube parallel to Z axis. Tube center point is in (0, 0, 0)'''
+
+    @staticmethod
+    def _connect_layers(faces: FaceCollection, prev_layer: List[Point],
+                        curr_layer: List[Point]) -> None:
+        iterator = zip(pairwise(curr_layer),
+                       pairwise(prev_layer))
+        for (cl, cr), (pl, pr) in iterator:
+            faces.add_face(cl, cr, pl)
+            faces.add_face(pl, cr, pr)
+
+    def __init__(self, radius: float, height: float, r_layer_num: int,
+                 h_layer_num: int) -> None:
+        angles = Angle.linspace(Angle(0), Angle(2*np.pi), 6*r_layer_num + 1,
+                                endpoint=True)
+        heights = np.linspace(0, height, h_layer_num+1, endpoint=True)
+        point_layers = []
+        for h in heights:
+            point_layers.append([
+                    Point.from_spherical(radius, phi, Angle(np.pi/2)).move(z=h)
+                    for phi in angles])
+        self.description = FaceCollection()
+        for prev, curr in pairwise(point_layers):
+            Tube._connect_layers(self.description, prev, curr)

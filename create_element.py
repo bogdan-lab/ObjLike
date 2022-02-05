@@ -8,7 +8,7 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from primitives import Point, Angle
 from box import Box
 from cylinder import Cylinder
-from collection_2d import Plane, CircleSegment, Circle
+from collection_2d import Plane, CircleSegment, Circle, Tube
 
 # List of elements I want to be able to create:
 # 1) Box - using triangles only
@@ -132,6 +132,17 @@ def create_plane(args):
         plot_result(points, plane.description.faces)
 
 
+def create_tube(args):
+    tube = Tube(radius=args.radius, height=args.height,
+                r_layer_num=args.radial_layer_num,
+                h_layer_num=args.height_layer_num)
+    if not args.no_plot:
+        points = [(p.real[0], p.real[1], p.real[2])
+                  for p in tube.description.get_transformed_points()
+                  .point_to_index]
+        plot_result(points, tube.description.faces)
+
+
 def add_plane_parser(subparsers, parent_parsers):
     parser = subparsers.add_parser(
             "plane",
@@ -195,6 +206,26 @@ def add_circle_parser(subparsers, parent_parsers):
     circle_parser.set_defaults(callback=create_circle)
 
 
+def add_tube_parser(subparsers, parent_parsers):
+    tube_parser = subparsers.add_parser(
+            "tube",
+            parents=parent_parsers,
+            help="Basic tube element",
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter
+            )
+    tube_parser.add_argument('-r', '--radius', type=float, required=True,
+                             help="Tube radius")
+    tube_parser.add_argument('-t', '--height', type=float, required=True,
+                             help="Tube height")
+    tube_parser.add_argument('-rln', '--radial_layer_num', type=int,
+                             required=True,
+                             help='Number of mesh layers in the circle')
+    tube_parser.add_argument('-hln', '--height_layer_num', type=int,
+                             required=True,
+                             help='Number of mesh layers in height')
+    tube_parser.set_defaults(callback=create_tube)
+
+
 def add_cylinder_parser(subparsers, parent_parsers):
     cylinder_parser = subparsers.add_parser(
             "cylinder",
@@ -248,6 +279,7 @@ def setup_parser(parser):
     add_segment_parser(subparsers, [parent_parser])
     add_circle_parser(subparsers, [parent_parser])
     add_cylinder_parser(subparsers, [parent_parser])
+    add_tube_parser(subparsers, [parent_parser])
 
 
 def main():
