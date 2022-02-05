@@ -7,7 +7,7 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 from primitives import Point, Angle
 from box import Box
-from collection_2d import Plane, CircleSegment, Circle, Tube, Cylinder
+from collection_2d import Plane, CircleSegment, Circle, Tube, Cylinder, Cone
 
 # List of elements I want to be able to create:
 # 1) Box - using triangles only
@@ -145,6 +145,16 @@ def create_tube(args):
         plot_result(points, tube.description.faces)
 
 
+def create_cone(args):
+    cone = Cone(radius=args.radius, height=args.height,
+                r_layer_num=args.radial_layer_num)
+    if not args.no_plot:
+        points = [(p.real[0], p.real[1], p.real[2])
+                  for p in cone.description.get_transformed_points()
+                  .point_to_index]
+        plot_result(points, cone.description.faces)
+
+
 def add_plane_parser(subparsers, parent_parsers):
     parser = subparsers.add_parser(
             "plane",
@@ -244,6 +254,20 @@ def add_cylinder_parser(subparsers, parent_parsers):
     cylinder_parser.set_defaults(callback=create_cylinder)
 
 
+def add_cone_parser(subparsers, parent_parsers):
+    cone_parser = subparsers.add_parser(
+            "cone",
+            parents=parent_parsers,
+            help="Basic cone element",
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter
+            )
+    cone_parser.add_argument('-r', '--radius', type=float, required=True)
+    cone_parser.add_argument('-t', '--height', type=float, required=True)
+    cone_parser.add_argument('-rln', '--radial_layer_num', type=int,
+                             required=True)
+    cone_parser.set_defaults(callback=create_cone)
+
+
 # TODO default argument of filename has to be for each element unique
 def setup_parser(parser):
     parent_parser = argparse.ArgumentParser(add_help=False)
@@ -281,6 +305,7 @@ def setup_parser(parser):
     add_circle_parser(subparsers, [parent_parser])
     add_cylinder_parser(subparsers, [parent_parser])
     add_tube_parser(subparsers, [parent_parser])
+    add_cone_parser(subparsers, [parent_parser])
 
 
 def main():

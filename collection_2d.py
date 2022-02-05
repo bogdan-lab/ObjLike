@@ -4,6 +4,20 @@ import numpy as np
 from primitives import Point, FaceCollection, Angle
 
 
+# TODO replace by itertools.pairwise when it is available
+def pairwise(iterable):
+    # pairwise('ABCDEFG') --> AB BC CD DE EF FG
+    a, b = tee(iterable)
+    next(b, None)
+    return zip(a, b)
+
+
+def _last_cycled(data: List):
+    for el in data:
+        yield el
+    yield data[0]
+
+
 class Plane:
     '''Simple rectangle in XY plane centered in point (0, 0, 0)'''
     def __init__(self, width: float, height: float) -> None:
@@ -14,14 +28,6 @@ class Plane:
         right_top = Point(width/2, height/2, 0)
         self.description.add_face(left_bot, right_bot, right_top)
         self.description.add_face(left_bot, right_top, left_top)
-
-
-# TODO replace by itertools.pairwise when it is available
-def pairwise(iterable):
-    # pairwise('ABCDEFG') --> AB BC CD DE EF FG
-    a, b = tee(iterable)
-    next(b, None)
-    return zip(a, b)
 
 
 class CircleSegment:
@@ -127,16 +133,11 @@ class Tube:
 class Cylinder:
     '''Simple cylinder parallel to Z axis with base circle center in (0, 0, 0)
     '''
-    @staticmethod
-    def _last_cycled(data: List):
-        for el in data:
-            yield el
-        yield data[0]
 
     def __init__(self, radius: float, height: float, r_layer_num: int,
                  h_layer_num: int) -> None:
         bot = Circle(radius, r_layer_num)
-        bot_base = bot.description
+        bot_descr = bot.description
         top_base = Circle(radius, r_layer_num).description.move(z=height)
         top_base.accept_transformations()
         heights = np.linspace(0, height, h_layer_num+1, endpoint=True)
@@ -144,9 +145,22 @@ class Cylinder:
         for h in heights:
             point_layers.append([p.move(z=h)
                                  for p in
-                                 self._last_cycled(bot.outer_layer_points)])
+                                 _last_cycled(bot.outer_layer_points)])
         self.description = FaceCollection()
         for prev, curr in pairwise(point_layers):
             Tube._connect_layers(self.description, prev, curr)
-        for descr in (bot_base, top_base):
+        for descr in (bot_descr, top_base):
             self.description = FaceCollection.merge(self.description, descr)
+
+
+# TODO cut vertiacal triangles like in cylinder
+class Cone:
+    '''Simple cone parallel to Z axis with base circle center in (0, 0, 0)'''
+    def __init__(self, radius: float, height: float, r_layer_num: int) -> None:
+        bot = Circle(radius, r_layer_num)
+        top = Point(0, 0, height)
+        self.description = FaceCollection()
+        for pl, pr in pairwise(_last_cycled(bot.outer_layer_points)):
+            self.description.add_face(pr, top, pl)
+        self.description = FaceCollection.merge(self.description,
+                                                bot.description)

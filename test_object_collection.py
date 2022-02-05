@@ -1,5 +1,5 @@
 import numpy as np
-from collection_2d import CircleSegment, Circle, Tube, Cylinder
+from collection_2d import CircleSegment, Circle, Tube, Cylinder, Cone
 from primitives import Angle
 
 
@@ -112,3 +112,23 @@ def test_cylinder_creation_2_layer():
                for p in cylinder.description.points.point_to_index) == 12
     assert sum(np.isclose(p.real[2], 6)
                for p in cylinder.description.points.point_to_index) == 19
+
+
+def test_cone_creation_1_layer():
+    cone = Cone(radius=5, height=2, r_layer_num=1)
+    assert len(cone.description.faces) == 12
+    assert cone.description.points.get_points_num() == 8
+    assert sum(np.isclose(p.real[2], 2)
+               for p in cone.description.points.point_to_index) == 1
+    assert sum(np.isclose(p.real[2], 0)
+               for p in cone.description.points.point_to_index) == 7
+
+
+def test_cone_creation_3_layer():
+    cone = Cone(radius=5, height=2, r_layer_num=3)
+    assert len(cone.description.faces) == 72
+    assert cone.description.points.get_points_num() == 38
+    assert sum(np.isclose(p.real[2], 2)
+               for p in cone.description.points.point_to_index) == 1
+    assert sum(np.isclose(p.real[2], 0)
+               for p in cone.description.points.point_to_index) == 37
