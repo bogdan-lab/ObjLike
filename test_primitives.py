@@ -181,7 +181,7 @@ def test_get_point():
     collection.add_point(Point(1, 0, 0))
     collection.add_point(Point(1, 2, 0))
     collection.add_point(Point(1, 2, 3))
-    assert collection.get_points_num() == 4
+    assert len(collection) == 4
     assert collection.get_point(0) == Point(0, 0, 0)
     assert collection.get_point(1) == Point(1, 0, 0)
     assert collection.get_point(2) == Point(1, 2, 0)
@@ -192,11 +192,11 @@ def test_face_collection_add_face():
     test = FaceCollection()
     test.add_face(Point(1, 0, 0), Point(0, 1, 0), Point(0, 0, 1))
     assert len(test.faces) == 1
-    assert len(test.points.point_to_index) == 3
+    assert len(test.points) == 3
     assert (0, 1, 2) in test.faces
     test.add_face(Point(1, 0, 0), Point(0, 1, 0), Point(0, 1, 1))
     assert len(test.faces) == 2
-    assert len(test.points.point_to_index) == 4
+    assert len(test.points) == 4
     assert (0, 1, 3) in test.faces
     test.add_face(Point(1, 0, 0), Point(0, 1, 0), Point(0, 0, 1))
     assert len(test.faces) == 2
@@ -233,7 +233,7 @@ def test_face_collection_accept_transformation_rotate_only():
                                           Point(0, 0, 1): 2}
     test.accept_transformations()
     assert test.rotations == {'x': Angle(0), 'y': Angle(0), 'z': Angle(0)}
-    real_points = [p.real for p in test.points.point_to_index]
+    real_points = [p.real for p in test.points]
     assert len(real_points) == 3
     assert all(np.isclose(real_points[0], (0, 0, -1)))
     assert all(np.isclose(real_points[1], (1, 0, 0)))
@@ -272,7 +272,7 @@ def test_merge_collections():
     rhs.add_face(Point(1, 0, 0), Point(0, 1, 0), Point(0, 1, 1))
     res = FaceCollection.merge(lhs, rhs)
     assert len(res.faces) == 2
-    assert len(res.points.point_to_index) == 4
+    assert len(res.points) == 4
     assert Point(1, 0, 0) in res.points.point_to_index
     assert Point(0, 1, 0) in res.points.point_to_index
     assert Point(0, 0, 1) in res.points.point_to_index

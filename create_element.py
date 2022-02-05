@@ -100,8 +100,7 @@ def create_segment(args):
                             args.radius, args.layer_num)
     if not args.no_plot:
         points = [(p.real[0], p.real[1], p.real[2])
-                  for p in segment.description.get_transformed_points()
-                  .point_to_index]
+                  for p in segment.description.get_transformed_points()]
         plot_result(points, segment.description.faces)
 
 
@@ -109,8 +108,7 @@ def create_circle(args):
     circle = Circle(radius=args.radius, layer_num=args.layer_num)
     if not args.no_plot:
         points = [(p.real[0], p.real[1], p.real[2])
-                  for p in circle.description.get_transformed_points()
-                  .point_to_index]
+                  for p in circle.description.get_transformed_points()]
         plot_result(points, circle.description.faces)
 
 
@@ -120,8 +118,7 @@ def create_cylinder(args):
                         h_layer_num=args.height_layer_num)
     if not args.no_plot:
         points = [(p.real[0], p.real[1], p.real[2])
-                  for p in cylinder.description.get_transformed_points()
-                  .point_to_index]
+                  for p in cylinder.description.get_transformed_points()]
         plot_result(points, cylinder.description.faces)
 
 
@@ -129,8 +126,7 @@ def create_plane(args):
     plane = Plane(width=args.width, height=args.height)
     if not args.no_plot:
         points = [(p.real[0], p.real[1], p.real[2])
-                  for p in plane.description.get_transformed_points()
-                  .point_to_index]
+                  for p in plane.description.get_transformed_points()]
         plot_result(points, plane.description.faces)
 
 
@@ -140,8 +136,7 @@ def create_tube(args):
                 h_layer_num=args.height_layer_num)
     if not args.no_plot:
         points = [(p.real[0], p.real[1], p.real[2])
-                  for p in tube.description.get_transformed_points()
-                  .point_to_index]
+                  for p in tube.description.get_transformed_points()]
         plot_result(points, tube.description.faces)
 
 
@@ -150,8 +145,7 @@ def create_cone(args):
                 r_layer_num=args.radial_layer_num)
     if not args.no_plot:
         points = [(p.real[0], p.real[1], p.real[2])
-                  for p in cone.description.get_transformed_points()
-                  .point_to_index]
+                  for p in cone.description.get_transformed_points()]
         plot_result(points, cone.description.faces)
 
 

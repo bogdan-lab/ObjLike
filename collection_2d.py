@@ -133,7 +133,7 @@ class Cylinder:
         top_base.accept_transformations()
         heights = np.linspace(0, height, h_layer_num+1, endpoint=True)
         outer_points = Circle._get_outer_points(
-                                        list(bot_descr.points.point_to_index), 6*r_layer_num)
+                                        list(bot_descr.points), 6*r_layer_num)
         point_layers = []
         for h in heights:
             point_layers.append([p.move(z=h)
@@ -154,7 +154,7 @@ class Cone:
         top = Point(0, 0, height)
         self.description = FaceCollection()
         outer_points = Circle._get_outer_points(
-                                        list(bot_descr.points.point_to_index), 6*r_layer_num)
+                                        list(bot_descr.points), 6*r_layer_num)
         for pl, pr in pairwise(_last_cycled(outer_points)):
             self.description.add_face(pr, top, pl)
         self.description = FaceCollection.merge(self.description, bot_descr)

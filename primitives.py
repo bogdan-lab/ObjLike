@@ -166,7 +166,10 @@ class PointCollection:
     def __repr__(self) -> str:
         return str(self)
 
-    def get_points_num(self) -> int:
+    def __iter__(self):
+        return iter(self.point_to_index)
+
+    def __len__(self):
         return len(self.point_to_index)
 
     def add_point(self, p: Point) -> int:
