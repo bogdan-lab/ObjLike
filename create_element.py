@@ -1,4 +1,3 @@
-
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
@@ -6,7 +5,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 from primitives import Point, Angle
-from collection_2d import Plane, CircleSegment, Circle, Tube, Cylinder, Cone, Box
+from object_collection import Plane, CircleSegment, Circle, Tube, Cylinder, Cone, Box
 
 # List of elements I want to be able to create:
 # 1) Box - using triangles only
