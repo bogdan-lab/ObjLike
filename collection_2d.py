@@ -122,3 +122,31 @@ class Tube:
         self.description = FaceCollection()
         for prev, curr in pairwise(point_layers):
             Tube._connect_layers(self.description, prev, curr)
+
+
+class Cylinder:
+    '''Simple cylinder parallel to Z axis with base circle center in (0, 0, 0)
+    '''
+    @staticmethod
+    def _last_cycled(data: List):
+        for el in data:
+            yield el
+        yield data[0]
+
+    def __init__(self, radius: float, height: float, r_layer_num: int,
+                 h_layer_num: int) -> None:
+        bot = Circle(radius, r_layer_num)
+        bot_base = bot.description
+        top_base = Circle(radius, r_layer_num).description.move(z=height)
+        top_base.accept_transformations()
+        heights = np.linspace(0, height, h_layer_num+1, endpoint=True)
+        point_layers = []
+        for h in heights:
+            point_layers.append([p.move(z=h)
+                                 for p in
+                                 self._last_cycled(bot.outer_layer_points)])
+        self.description = FaceCollection()
+        for prev, curr in pairwise(point_layers):
+            Tube._connect_layers(self.description, prev, curr)
+        for descr in (bot_base, top_base):
+            self.description = FaceCollection.merge(self.description, descr)

@@ -7,8 +7,7 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 from primitives import Point, Angle
 from box import Box
-from cylinder import Cylinder
-from collection_2d import Plane, CircleSegment, Circle, Tube
+from collection_2d import Plane, CircleSegment, Circle, Tube, Cylinder
 
 # List of elements I want to be able to create:
 # 1) Box - using triangles only
@@ -116,11 +115,14 @@ def create_circle(args):
 
 
 def create_cylinder(args):
-    cylinder = Cylinder(origin=Point(args.x0, args.y0, args.z0),
-                        radius=args.radius, height=args.height,
-                        layer_num=args.layer_num)
+    cylinder = Cylinder(radius=args.radius, height=args.height,
+                        r_layer_num=args.radial_layer_num,
+                        h_layer_num=args.height_layer_num)
     if not args.no_plot:
-        plot_result(cylinder.get_real_points_as_tuples(), cylinder.faces)
+        points = [(p.real[0], p.real[1], p.real[2])
+                  for p in cylinder.description.get_transformed_points()
+                  .point_to_index]
+        plot_result(points, cylinder.description.faces)
 
 
 def create_plane(args):
@@ -233,13 +235,12 @@ def add_cylinder_parser(subparsers, parent_parsers):
             help="Basic cylinder element",
             formatter_class=argparse.ArgumentDefaultsHelpFormatter
             )
-    cylinder_parser.add_argument('-r', '--radius', type=float, required=True,
-                                 help="Radius of the cylinder bases")
-    cylinder_parser.add_argument('-t', '--height', type=float, required=True,
-                                 help="Cylinder height")
-    cylinder_parser.add_argument('-ln', '--layer_num', type=int, required=True,
-                                 help="Number of mesh layers in the"
-                                 "cylinder bases")
+    cylinder_parser.add_argument('-r', '--radius', type=float, required=True)
+    cylinder_parser.add_argument('-t', '--height', type=float, required=True)
+    cylinder_parser.add_argument('-rln', '--radial_layer_num', type=int,
+                                 required=True)
+    cylinder_parser.add_argument('-hln', '--height_layer_num', type=int,
+                                 required=True)
     cylinder_parser.set_defaults(callback=create_cylinder)
 
 

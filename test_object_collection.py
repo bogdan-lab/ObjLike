@@ -1,5 +1,5 @@
 import numpy as np
-from collection_2d import CircleSegment, Circle, Tube
+from collection_2d import CircleSegment, Circle, Tube, Cylinder
 from primitives import Angle
 
 
@@ -90,3 +90,25 @@ def test_tube_creation_2_layer():
                for p in tube.description.points.point_to_index) == 12
     assert sum(np.isclose(p.real[2], 6)
                for p in tube.description.points.point_to_index) == 12
+
+
+def test_cylinder_creation_1_layer():
+    cylinder = Cylinder(radius=5, height=2, r_layer_num=1, h_layer_num=1)
+    assert len(cylinder.description.faces) == 24
+    assert cylinder.description.points.get_points_num() == 14
+    assert sum(np.isclose(p.real[2], 0)
+               for p in cylinder.description.points.point_to_index) == 7
+    assert sum(np.isclose(p.real[2], 2)
+               for p in cylinder.description.points.point_to_index) == 7
+
+
+def test_cylinder_creation_2_layer():
+    cylinder = Cylinder(radius=5, height=6, r_layer_num=2, h_layer_num=2)
+    assert len(cylinder.description.faces) == 96
+    assert cylinder.description.points.get_points_num() == 50
+    assert sum(np.isclose(p.real[2], 0)
+               for p in cylinder.description.points.point_to_index) == 19
+    assert sum(np.isclose(p.real[2], 3)
+               for p in cylinder.description.points.point_to_index) == 12
+    assert sum(np.isclose(p.real[2], 6)
+               for p in cylinder.description.points.point_to_index) == 19
