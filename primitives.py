@@ -77,7 +77,7 @@ class Point:
                 )
 
     def __init__(self, x: float, y: float, z: float) -> None:
-        self.real = (x, y, z)
+        self.real = (round(x, 10), round(y, 10), round(z, 10))
         self.spherical = Point.convert_real_point_to_spherical(self.real)
 
     def __eq__(self, other: 'Point') -> bool:

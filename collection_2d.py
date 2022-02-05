@@ -6,13 +6,14 @@ from primitives import Point, FaceCollection, Angle
 
 # TODO replace by itertools.pairwise when it is available
 def pairwise(iterable):
-    # pairwise('ABCDEFG') --> AB BC CD DE EF FG
+    '''Generates as following (1,2,3) -> (1,2), (2, 3)'''
     a, b = tee(iterable)
     next(b, None)
     return zip(a, b)
 
 
 def _last_cycled(data: List):
+    '''Generates as following (1,2,3) -> 1, 2, 3, 1'''
     for el in data:
         yield el
     yield data[0]
@@ -28,6 +29,25 @@ class Plane:
         right_top = Point(width/2, height/2, 0)
         self.description.add_face(left_bot, right_bot, right_top)
         self.description.add_face(left_bot, right_top, left_top)
+
+
+class Box:
+    '''Simple box which diagonals crosses in (0, 0, 0)'''
+    def __init__(self, width: float, height: float, depth: float) -> None:
+        bot = Plane(width=width, height=depth).description.move(z=-height/2)
+        top = Plane(width=width, height=depth).description.move(z=height/2)
+        right = Plane(width=height, height=depth).description
+        right.rotate(y=Angle(np.pi/2)).move(x=width/2)
+        left = Plane(width=height, height=depth).description
+        left.rotate(y=Angle(np.pi/2)).move(x=-width/2)
+        front = Plane(width=width, height=height).description
+        front.rotate(x=Angle(np.pi/2)).move(y=-depth/2)
+        back = Plane(width=width, height=height).description
+        back.rotate(x=Angle(np.pi/2)).move(y=depth/2)
+        self.description = FaceCollection()
+        for pl in (bot, top, right, left, front, back):
+            pl.accept_transformations()
+            self.description = FaceCollection.merge(self.description, pl)
 
 
 class CircleSegment:
@@ -132,13 +152,10 @@ class Cylinder:
         top_base = Circle(radius, r_layer_num).description.move(z=height)
         top_base.accept_transformations()
         heights = np.linspace(0, height, h_layer_num+1, endpoint=True)
-        outer_points = Circle._get_outer_points(
-                                        list(bot_descr.points), 6*r_layer_num)
+        outer = Circle._get_outer_points(list(bot_descr.points), 6*r_layer_num)
         point_layers = []
         for h in heights:
-            point_layers.append([p.move(z=h)
-                                 for p in
-                                 _last_cycled(outer_points)])
+            point_layers.append([p.move(z=h) for p in _last_cycled(outer)])
         self.description = FaceCollection()
         for prev, curr in pairwise(point_layers):
             Tube._connect_layers(self.description, prev, curr)
@@ -153,8 +170,7 @@ class Cone:
         bot_descr = Circle(radius, r_layer_num).description
         top = Point(0, 0, height)
         self.description = FaceCollection()
-        outer_points = Circle._get_outer_points(
-                                        list(bot_descr.points), 6*r_layer_num)
-        for pl, pr in pairwise(_last_cycled(outer_points)):
+        outer = Circle._get_outer_points(list(bot_descr.points), 6*r_layer_num)
+        for pl, pr in pairwise(_last_cycled(outer)):
             self.description.add_face(pr, top, pl)
         self.description = FaceCollection.merge(self.description, bot_descr)

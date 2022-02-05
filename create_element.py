@@ -6,8 +6,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 from primitives import Point, Angle
-from box import Box
-from collection_2d import Plane, CircleSegment, Circle, Tube, Cylinder, Cone
+from collection_2d import Plane, CircleSegment, Circle, Tube, Cylinder, Cone, Box
 
 # List of elements I want to be able to create:
 # 1) Box - using triangles only
@@ -86,13 +85,11 @@ def reverse_face_orientation(faces):
 
 
 def create_box(args):
-    box = Box(origin=Point(args.x0, args.y0, args.z0),
-              width=args.width, height=args.height, depth=args.depth)
-    if args.inner_orientation:
-        box.invert_faces()
+    box = Box(width=args.width, height=args.height, depth=args.depth)
     if not args.no_plot:
-        plot_result(box.get_real_points_as_tuples(), box.faces)
-    box.save_to_file(args.output_file)
+        points = [(p.real[0], p.real[1], p.real[2])
+                  for p in box.description.get_transformed_points()]
+        plot_result(points, box.description.faces)
 
 
 def create_segment(args):

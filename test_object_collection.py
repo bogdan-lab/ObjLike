@@ -1,5 +1,5 @@
 import numpy as np
-from collection_2d import CircleSegment, Circle, Tube, Cylinder, Cone
+from collection_2d import CircleSegment, Circle, Tube, Cylinder, Cone, Box
 from primitives import Angle
 
 
@@ -95,3 +95,15 @@ def test_cone_creation_3_layer():
     assert len(cone.description.points) == 38
     assert sum(np.isclose(p.real[2], 2) for p in cone.description.points) == 1
     assert sum(np.isclose(p.real[2], 0) for p in cone.description.points) == 37
+
+
+def test_box_creation():
+    box = Box(width=2, height=4, depth=6)
+    assert len(box.description.faces) == 12
+    assert len(box.description.points) == 8
+    assert sum(np.isclose(p.real[0], -1) for p in box.description.points) == 4
+    assert sum(np.isclose(p.real[0], 1) for p in box.description.points) == 4
+    assert sum(np.isclose(p.real[1], -3) for p in box.description.points) == 4
+    assert sum(np.isclose(p.real[1], 3) for p in box.description.points) == 4
+    assert sum(np.isclose(p.real[2], -2) for p in box.description.points) == 4
+    assert sum(np.isclose(p.real[2], 2) for p in box.description.points) == 4
