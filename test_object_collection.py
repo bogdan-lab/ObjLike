@@ -128,7 +128,7 @@ def test_cylinder_creation_2_layer():
 
 
 def test_cone_creation_1_layer():
-    cone = Cone(radius=5, height=2, r_layer_num=1)
+    cone = Cone(radius=5, height=2, layer_num=1)
     assert len(cone.description.faces) == 12
     assert len(cone.description.points) == 8
     assert sum(np.isclose(p.real[2], 0) for p in cone.description.points) == 7
@@ -138,15 +138,17 @@ def test_cone_creation_1_layer():
 
 
 def test_cone_creation_3_layer():
-    cone = Cone(radius=9, height=17, r_layer_num=3)
-    assert len(cone.description.faces) == 72
-    assert len(cone.description.points) == 38
+    cone = Cone(radius=9, height=18, layer_num=3)
+    assert len(cone.description.faces) == 108
+    assert len(cone.description.points) == 56
     assert sum(np.isclose(p.real[2], 0) for p in cone.description.points) == 37
     assert Point(0, 0, 0) in cone.description.points
-    assert Point(0, 0, 17) in cone.description.points
+    assert Point(0, 0, 18) in cone.description.points
     assert sum(np.isclose(p.spherical[0], 3) for p in cone.description.points) == 6
     assert sum(np.isclose(p.spherical[0], 6) for p in cone.description.points) == 12
     assert sum(np.isclose(p.spherical[0], 9) for p in cone.description.points) == 18
+    assert sum(np.isclose(p.real[2], 6) for p in cone.description.points) == 12
+    assert sum(np.isclose(p.real[2], 12) for p in cone.description.points) == 6
 
 
 def test_box_creation():

@@ -1,5 +1,5 @@
-from itertools import tee, islice
-from typing import List, Tuple
+from itertools import tee
+from typing import List, Tuple, Iterable
 import numpy as np
 from primitives import Point, FaceCollection, Angle
 
@@ -17,6 +17,15 @@ def _last_cycled(data: List):
     for el in data:
         yield el
     yield data[0]
+
+
+def _select_points_with_r(points: Iterable[Point], radius: float,
+                          tol: float = 1e-8) -> Iterable[Point]:
+    '''Returns all points with radius close to the given, sorted by phi angle
+    '''
+    return sorted(
+            filter(lambda p: np.isclose(p.spherical[0], radius, atol=tol),
+                   points), key=lambda p: p.spherical[1])
 
 
 class Plane:
@@ -53,9 +62,7 @@ class Box:
 class CircleSegment:
     '''Circle segment in xy plane with center in (0, 0, 0).
     If one need to create CircleSegment(0, 2*np.pi) one should use Circle
-    class instead
-    '''
-
+    class instead'''
     @staticmethod
     def _layer_iterator(layer_num: int, radius: float):
         '''Generates point num on layer and layer radius as iterable'''
@@ -97,14 +104,6 @@ class CircleSegment:
 
 class Circle:
     '''Circle in xy plane with center in (0, 0, 0)'''
-
-    @staticmethod
-    def _get_outer_points(points, pts_num) -> List[Point]:
-        return sorted(
-                islice(
-                    sorted(points, key=lambda p: p.spherical[0], reverse=True),
-                    pts_num), key=lambda p: p.spherical[1])
-
     def __init__(self, radius: float, layer_num: int) -> None:
         self.description = FaceCollection()
         angles = Angle.linspace(Angle(0), Angle(2*np.pi), 7, endpoint=True)
@@ -117,7 +116,6 @@ class Circle:
 
 class Tube:
     '''Tube parallel to Z axis. Tube center point is in (0, 0, 0)'''
-
     @staticmethod
     def _connect_layers(faces: FaceCollection, prev_layer: List[Point],
                         curr_layer: List[Point]) -> None:
@@ -145,14 +143,13 @@ class Tube:
 class Cylinder:
     '''Simple cylinder parallel to Z axis with base circle center in (0, 0, 0)
     '''
-
     def __init__(self, radius: float, height: float, r_layer_num: int,
                  h_layer_num: int) -> None:
         bot_descr = Circle(radius, r_layer_num).description
         top_base = Circle(radius, r_layer_num).description.move(z=height)
         top_base.accept_transformations()
         heights = np.linspace(0, height, h_layer_num+1, endpoint=True)
-        outer = Circle._get_outer_points(list(bot_descr.points), 6*r_layer_num)
+        outer = _select_points_with_r(bot_descr.points, radius)
         point_layers = []
         for h in heights:
             point_layers.append([p.move(z=h) for p in _last_cycled(outer)])
@@ -163,14 +160,14 @@ class Cylinder:
             self.description = FaceCollection.merge(self.description, descr)
 
 
-# TODO cut vertiacal triangles like in cylinder
 class Cone:
     '''Simple cone parallel to Z axis with base circle center in (0, 0, 0)'''
-    def __init__(self, radius: float, height: float, r_layer_num: int) -> None:
-        bot_descr = Circle(radius, r_layer_num).description
-        top = Point(0, 0, height)
-        self.description = FaceCollection()
-        outer = Circle._get_outer_points(list(bot_descr.points), 6*r_layer_num)
-        for pl, pr in pairwise(_last_cycled(outer)):
-            self.description.add_face(pr, top, pl)
-        self.description = FaceCollection.merge(self.description, bot_descr)
+    def __init__(self, radius: float, height: float, layer_num: int) -> None:
+        bot_descr = Circle(radius, layer_num).description
+        side_descr = Circle(radius, layer_num).description
+        radius_height_pairs = zip(np.linspace(0, radius, layer_num+1),
+                                  np.linspace(height, 0, layer_num+1))
+        for r, h in radius_height_pairs:
+            for p in _select_points_with_r(side_descr.points, r):
+                p.move(z=h, inplace=True)
+        self.description = FaceCollection.merge(side_descr, bot_descr)

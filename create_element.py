@@ -138,7 +138,7 @@ def create_tube(args):
 
 def create_cone(args):
     cone = Cone(radius=args.radius, height=args.height,
-                r_layer_num=args.radial_layer_num)
+                layer_num=args.layer_num)
     if not args.no_plot:
         points = [(p.real[0], p.real[1], p.real[2])
                   for p in cone.description.get_transformed_points()]
@@ -253,8 +253,7 @@ def add_cone_parser(subparsers, parent_parsers):
             )
     cone_parser.add_argument('-r', '--radius', type=float, required=True)
     cone_parser.add_argument('-t', '--height', type=float, required=True)
-    cone_parser.add_argument('-rln', '--radial_layer_num', type=int,
-                             required=True)
+    cone_parser.add_argument('-ln', '--layer_num', type=int, required=True)
     cone_parser.set_defaults(callback=create_cone)
 
 
