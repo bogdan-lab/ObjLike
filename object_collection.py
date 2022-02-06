@@ -193,10 +193,13 @@ class Sphere:
 
     def __init__(self, radius: float, split_num: int) -> None:
         top = Point(0, 0, radius)
-        p1 = Point(np.sqrt(8/9)*radius, 0, -radius/3)
-        p2 = Point(-np.sqrt(2/9)*radius, np.sqrt(2/3)*radius, -radius/3)
-        p3 = Point(-np.sqrt(2/9)*radius, -np.sqrt(2/3)*radius, -radius/3)
-        faces = ((p1, top, p2), (p1, top, p3), (p2, top, p3), (p1, p2, p3))
+        xp = Point(radius, 0, 0)
+        yp = Point(0, radius, 0)
+        xm = Point(-radius, 0, 0)
+        ym = Point(0, -radius, 0)
+        bot = Point(0, 0, -radius)
+        faces = ((yp, top, xp), (xm, top, yp), (ym, top, xm), (xp, top, ym),
+                 (xp, bot, yp), (yp, bot, xm), (xm, bot, ym), (ym, bot, xp))
         for _ in range(split_num-1):
             tmp = tuple()
             for f in faces:

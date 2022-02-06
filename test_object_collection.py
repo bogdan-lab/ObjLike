@@ -165,20 +165,20 @@ def test_box_creation():
 
 def test_sphere_creation_split_1():
     sph = Sphere(radius=5, split_num=1)
-    assert len(sph.description.faces) == 4
-    assert len(sph.description.points) == 4
-    assert sum(np.isclose(p.spherical[0], 5) for p in sph.description.points) == 4
+    assert len(sph.description.faces) == 8
+    assert len(sph.description.points) == 6
+    assert sum(np.isclose(p.spherical[0], 5) for p in sph.description.points) == 6
 
 
 def test_sphere_creation_split_2():
     sph = Sphere(radius=7, split_num=2)
-    assert len(sph.description.faces) == 16
-    assert len(sph.description.points) == 10
-    assert sum(np.isclose(p.spherical[0], 7) for p in sph.description.points) == 10
+    assert len(sph.description.faces) == 32
+    assert len(sph.description.points) == 18
+    assert sum(np.isclose(p.spherical[0], 7) for p in sph.description.points) == 18
 
 
 def test_sphere_creation_split_3():
     sph = Sphere(radius=7, split_num=3)
-    assert len(sph.description.faces) == 64
-    assert len(sph.description.points) == 34
-    assert sum(np.isclose(p.spherical[0], 7) for p in sph.description.points) == 34
+    assert len(sph.description.faces) == 128
+    assert len(sph.description.points) == 66
+    assert sum(np.isclose(p.spherical[0], 7) for p in sph.description.points) == 66
