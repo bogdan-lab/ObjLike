@@ -171,3 +171,37 @@ class Cone:
             for p in _select_points_with_r(side_descr.points, r):
                 p.move(z=h, inplace=True)
         self.description = FaceCollection.merge(side_descr, bot_descr)
+
+
+class Sphere:
+    '''Simple sphere with center in (0, 0, 0)'''
+    @staticmethod
+    def _between_points_on_sphere(p1: Point, p2: Point) -> Point:
+        '''Expects that p1 and p2 are on the sphere'''
+        ml = Point((p1.real[0] + p2.real[0])/2,
+                   (p1.real[1] + p2.real[1])/2,
+                   (p1.real[2] + p2.real[2])/2)
+        return Point.from_spherical(0.5*(p1.spherical[0] + p2.spherical[0]),
+                                    ml.spherical[1], ml.spherical[2])
+
+    @staticmethod
+    def _split_face(p1: Point, p2: Point, p3: Point):
+        ml = Sphere._between_points_on_sphere(p1, p2)
+        mr = Sphere._between_points_on_sphere(p2, p3)
+        mb = Sphere._between_points_on_sphere(p1, p3)
+        return ((p1, ml, mb), (ml, mr, mb), (mb, mr, p3), (ml, p2, mr))
+
+    def __init__(self, radius: float, split_num: int) -> None:
+        top = Point(0, 0, radius)
+        p1 = Point(np.sqrt(8/9)*radius, 0, -radius/3)
+        p2 = Point(-np.sqrt(2/9)*radius, np.sqrt(2/3)*radius, -radius/3)
+        p3 = Point(-np.sqrt(2/9)*radius, -np.sqrt(2/3)*radius, -radius/3)
+        faces = ((p1, top, p2), (p1, top, p3), (p2, top, p3), (p1, p2, p3))
+        for _ in range(split_num-1):
+            tmp = tuple()
+            for f in faces:
+                tmp += Sphere._split_face(*f)
+            faces = tmp
+        self.description = FaceCollection()
+        for f in faces:
+            self.description.add_face(*f)

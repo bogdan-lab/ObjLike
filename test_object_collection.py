@@ -1,5 +1,5 @@
 import numpy as np
-from object_collection import Plane, CircleSegment, Circle, Tube, Cylinder, Cone, Box
+from object_collection import Plane, CircleSegment, Circle, Tube, Cylinder, Cone, Box, Sphere
 from primitives import Angle, Point
 
 
@@ -161,3 +161,24 @@ def test_box_creation():
     assert sum(np.isclose(p.real[1], 3) for p in box.description.points) == 4
     assert sum(np.isclose(p.real[2], -2) for p in box.description.points) == 4
     assert sum(np.isclose(p.real[2], 2) for p in box.description.points) == 4
+
+
+def test_sphere_creation_split_1():
+    sph = Sphere(radius=5, split_num=1)
+    assert len(sph.description.faces) == 4
+    assert len(sph.description.points) == 4
+    assert sum(np.isclose(p.spherical[0], 5) for p in sph.description.points) == 4
+
+
+def test_sphere_creation_split_2():
+    sph = Sphere(radius=7, split_num=2)
+    assert len(sph.description.faces) == 16
+    assert len(sph.description.points) == 10
+    assert sum(np.isclose(p.spherical[0], 7) for p in sph.description.points) == 10
+
+
+def test_sphere_creation_split_3():
+    sph = Sphere(radius=7, split_num=3)
+    assert len(sph.description.faces) == 64
+    assert len(sph.description.points) == 34
+    assert sum(np.isclose(p.spherical[0], 7) for p in sph.description.points) == 34

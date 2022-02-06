@@ -5,7 +5,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 from primitives import Point, Angle
-from object_collection import Plane, CircleSegment, Circle, Tube, Cylinder, Cone, Box
+from object_collection import Plane, CircleSegment, Circle, Tube, Cylinder, Cone, Box, Sphere
 
 # List of elements I want to be able to create:
 # 1) Box - using triangles only
@@ -145,6 +145,14 @@ def create_cone(args):
         plot_result(points, cone.description.faces)
 
 
+def create_sphere(args):
+    sphere = Sphere(radius=args.radius, split_num=args.split_num)
+    if not args.no_plot:
+        points = [(p.real[0], p.real[1], p.real[2])
+                  for p in sphere.description.get_transformed_points()]
+        plot_result(points, sphere.description.faces)
+
+
 def add_plane_parser(subparsers, parent_parsers):
     parser = subparsers.add_parser(
             "plane",
@@ -206,6 +214,18 @@ def add_circle_parser(subparsers, parent_parsers):
     circle_parser.add_argument('-ln', '--layer_num', type=int, required=True,
                                help='Number of mesh layers in the circle')
     circle_parser.set_defaults(callback=create_circle)
+
+
+def add_sphere_parser(subparsers, parent_parsers):
+    circle_parser = subparsers.add_parser(
+            "sphere",
+            parents=parent_parsers,
+            help="Basic sphere element",
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter
+            )
+    circle_parser.add_argument('-r', '--radius', type=float, required=True)
+    circle_parser.add_argument('-sn', '--split_num', type=int, required=True)
+    circle_parser.set_defaults(callback=create_sphere)
 
 
 def add_tube_parser(subparsers, parent_parsers):
@@ -295,6 +315,7 @@ def setup_parser(parser):
     add_cylinder_parser(subparsers, [parent_parser])
     add_tube_parser(subparsers, [parent_parser])
     add_cone_parser(subparsers, [parent_parser])
+    add_sphere_parser(subparsers, [parent_parser])
 
 
 def main():
