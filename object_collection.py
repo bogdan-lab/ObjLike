@@ -1,5 +1,6 @@
 from itertools import tee
 from typing import List, Tuple, Iterable
+from functools import reduce
 import numpy as np
 from primitives import Point, FaceCollection, Angle
 
@@ -201,10 +202,8 @@ class Sphere:
         faces = ((yp, top, xp), (xm, top, yp), (ym, top, xm), (xp, top, ym),
                  (xp, bot, yp), (yp, bot, xm), (xm, bot, ym), (ym, bot, xp))
         for _ in range(split_num-1):
-            tmp = tuple()
-            for f in faces:
-                tmp += Sphere._split_face(*f)
-            faces = tmp
+            faces = reduce(lambda initial, f: initial + Sphere._split_face(*f),
+                           faces, tuple())
         self.description = FaceCollection()
         for f in faces:
             self.description.add_face(*f)

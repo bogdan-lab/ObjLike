@@ -1,49 +1,53 @@
 import numpy as np
-from primitives import Point, PointCollection, FaceCollection, Angle
+from primitives import Point, PointCollection, FaceCollection, Angle, RealCoordinates, SphericalCoordinates
 
 
 def test_convert_spher_point_to_real():
     assert all(np.isclose(
-            Point.convert_spherical_point_to_real((5, Angle(np.pi/2),
-                                                   Angle(np.pi))), (0, 0, -5)))
+            Point.convert_spherical_point_to_real(
+                    SphericalCoordinates(5, Angle(np.pi/2), Angle(np.pi))),
+                    RealCoordinates(0, 0, -5)))
     assert all(np.isclose(
-            Point.convert_spherical_point_to_real((5, Angle(np.pi/2),
-                                                  Angle(np.pi/2))), (0, 5, 0)))
+            Point.convert_spherical_point_to_real(
+                    SphericalCoordinates(5, Angle(np.pi/2), Angle(np.pi/2))),
+                    RealCoordinates(0, 5, 0)))
     assert all(np.isclose(
-            Point.convert_spherical_point_to_real((5, Angle(0),
-                                                  Angle(np.pi/2))), (5, 0, 0)))
+            Point.convert_spherical_point_to_real(
+                    SphericalCoordinates(5, Angle(0), Angle(np.pi/2))),
+                    RealCoordinates(5, 0, 0)))
     assert all(np.isclose(
                  Point.convert_spherical_point_to_real(
-                                         (0, Angle(0), Angle(0))), (0, 0, 0)))
+                         SphericalCoordinates(0, Angle(0), Angle(0))),
+                         RealCoordinates(0, 0, 0)))
 
 
 def test_convert_real_to_spher():
-    sph_point = Point.convert_real_point_to_spherical((0, 0, 0))
-    assert np.isclose(sph_point[0], 0)
-    assert np.isclose(sph_point[1].value, 0)
-    assert np.isclose(sph_point[2].value, 0)
-    sph_point = Point.convert_real_point_to_spherical((3, 0, 0))
-    assert np.isclose(sph_point[0], 3)
-    assert np.isclose(sph_point[1].value, 0)
-    assert np.isclose(sph_point[2].value, np.pi/2)
-    sph_point = Point.convert_real_point_to_spherical((0, 3, 0))
-    assert np.isclose(sph_point[0], 3)
-    assert np.isclose(sph_point[1].value, np.pi/2)
-    assert np.isclose(sph_point[2].value, np.pi/2)
-    sph_point = Point.convert_real_point_to_spherical((0, 0, 3))
-    assert np.isclose(sph_point[0], 3)
-    assert np.isclose(sph_point[1].value, 0)
-    assert np.isclose(sph_point[2].value, 0)
+    sph_point = Point.convert_real_point_to_spherical(RealCoordinates(0, 0, 0))
+    assert np.isclose(sph_point.r, 0)
+    assert np.isclose(sph_point.phi.value, 0)
+    assert np.isclose(sph_point.theta.value, 0)
+    sph_point = Point.convert_real_point_to_spherical(RealCoordinates(3, 0, 0))
+    assert np.isclose(sph_point.r, 3)
+    assert np.isclose(sph_point.phi.value, 0)
+    assert np.isclose(sph_point.theta.value, np.pi/2)
+    sph_point = Point.convert_real_point_to_spherical(RealCoordinates(0, 3, 0))
+    assert np.isclose(sph_point.r, 3)
+    assert np.isclose(sph_point.phi.value, np.pi/2)
+    assert np.isclose(sph_point.theta.value, np.pi/2)
+    sph_point = Point.convert_real_point_to_spherical(RealCoordinates(0, 0, 3))
+    assert np.isclose(sph_point.r, 3)
+    assert np.isclose(sph_point.phi.value, 0)
+    assert np.isclose(sph_point.theta.value, 0)
 
 
 def test_convert_both_ways():
-    sph_point = (1, Angle(2), Angle(3))
+    sph_point = SphericalCoordinates(1, Angle(2), Angle(3))
     res_sph = Point.convert_real_point_to_spherical(
                     Point.convert_spherical_point_to_real(sph_point))
-    assert np.isclose(res_sph[0], sph_point[0])
-    assert np.isclose(res_sph[1].value, sph_point[1].value)
-    assert np.isclose(res_sph[2].value, sph_point[2].value)
-    real_point = (1, 2, 3)
+    assert np.isclose(res_sph.r, sph_point.r)
+    assert np.isclose(res_sph.phi.value, sph_point.phi.value)
+    assert np.isclose(res_sph.theta.value, sph_point.theta.value)
+    real_point = RealCoordinates(1, 2, 3)
     res_real = Point.convert_spherical_point_to_real(
                     Point.convert_real_point_to_spherical(real_point))
     assert all(np.isclose(real_point, res_real))
