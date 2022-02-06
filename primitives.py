@@ -200,6 +200,13 @@ class FaceCollection:
         self.moves = {'x': 0, 'y': 0, 'z': 0}
         self.rotations = {'x': Angle(0), 'y': Angle(0), 'z': Angle(0)}
 
+    def faced_points(self):
+        '''Iterates over faces returning vertex points'''
+        for f in self.faces:
+            yield (self.points.get_point(f[0]),
+                   self.points.get_point(f[1]),
+                   self.points.get_point(f[2]))
+
     def add_face(self, p1: Point, p2: Point, p3: Point) -> None:
         self.faces.add((self.points.add_point(p1),
                         self.points.add_point(p2),

@@ -36,48 +36,6 @@ from object_collection import Plane, CircleSegment, Circle, Tube, Cylinder, Cone
 DEFAULT_OUTPUT_FILE = "element.obj_like"
 
 
-# If I make this a plymorphic method it can be done faster than linear search!
-def get_object_boundaries(points):
-    xmin = np.inf
-    xmax = -np.inf
-    ymin = np.inf
-    ymax = -np.inf
-    zmin = np.inf
-    zmax = -np.inf
-    for p in points:
-        xmin = min(xmin, p[0].real)
-        xmax = max(xmax, p[0])
-        ymin = min(ymin, p[1])
-        ymax = max(ymax, p[1])
-        zmin = min(zmin, p[2])
-        zmax = max(zmax, p[2])
-    return {"xlim": (xmin, xmax), "ylim": (ymin, ymax), "zlim": (zmin, zmax)}
-
-
-def get_polygon_list(points, faces):
-    return [[points[f[0]], points[f[1]], points[f[2]]] for f in faces]
-
-
-def plot_result(points, faces):
-    fig = plt.figure()
-    ax = Axes3D(fig)
-    bounds = get_object_boundaries(points)
-    ax.set_xlim3d(bounds["xlim"])
-    ax.set_ylim3d(bounds["ylim"])
-    ax.set_zlim3d(bounds["zlim"])
-    ax.set_xlabel("X")
-    ax.set_ylabel("Y")
-    ax.set_zlabel("Z")
-    fig.add_axes(ax, label="main")
-    ax.add_collection3d(
-            Poly3DCollection(
-                    get_polygon_list(points, faces),
-                    edgecolor="black"
-            )
-    )
-    plt.show()
-
-
 def reverse_face_orientation(faces):
     for i in range(len(faces)):
         faces[i] = (faces[i][2], faces[i][1], faces[i][0])
@@ -86,26 +44,20 @@ def reverse_face_orientation(faces):
 def create_box(args):
     box = Box(width=args.width, height=args.height, depth=args.depth)
     if not args.no_plot:
-        points = [(p.real[0], p.real[1], p.real[2])
-                  for p in box.description.get_transformed_points()]
-        plot_result(points, box.description.faces)
+        box.plot()
 
 
 def create_segment(args):
     segment = CircleSegment(Angle(args.phi_lo), Angle(args.phi_hi),
                             args.radius, args.layer_num)
     if not args.no_plot:
-        points = [(p.real[0], p.real[1], p.real[2])
-                  for p in segment.description.get_transformed_points()]
-        plot_result(points, segment.description.faces)
+        segment.plot()
 
 
 def create_circle(args):
     circle = Circle(radius=args.radius, layer_num=args.layer_num)
     if not args.no_plot:
-        points = [(p.real[0], p.real[1], p.real[2])
-                  for p in circle.description.get_transformed_points()]
-        plot_result(points, circle.description.faces)
+        circle.plot()
 
 
 def create_cylinder(args):
@@ -113,17 +65,13 @@ def create_cylinder(args):
                         r_layer_num=args.radial_layer_num,
                         h_layer_num=args.height_layer_num)
     if not args.no_plot:
-        points = [(p.real[0], p.real[1], p.real[2])
-                  for p in cylinder.description.get_transformed_points()]
-        plot_result(points, cylinder.description.faces)
+        cylinder.plot()
 
 
 def create_plane(args):
     plane = Plane(width=args.width, height=args.height)
     if not args.no_plot:
-        points = [(p.real[0], p.real[1], p.real[2])
-                  for p in plane.description.get_transformed_points()]
-        plot_result(points, plane.description.faces)
+        plane.plot()
 
 
 def create_tube(args):
@@ -131,26 +79,20 @@ def create_tube(args):
                 r_layer_num=args.radial_layer_num,
                 h_layer_num=args.height_layer_num)
     if not args.no_plot:
-        points = [(p.real[0], p.real[1], p.real[2])
-                  for p in tube.description.get_transformed_points()]
-        plot_result(points, tube.description.faces)
+        tube.plot()
 
 
 def create_cone(args):
     cone = Cone(radius=args.radius, height=args.height,
                 layer_num=args.layer_num)
     if not args.no_plot:
-        points = [(p.real[0], p.real[1], p.real[2])
-                  for p in cone.description.get_transformed_points()]
-        plot_result(points, cone.description.faces)
+        cone.plot()
 
 
 def create_sphere(args):
     sphere = Sphere(radius=args.radius, split_num=args.split_num)
     if not args.no_plot:
-        points = [(p.real[0], p.real[1], p.real[2])
-                  for p in sphere.description.get_transformed_points()]
-        plot_result(points, sphere.description.faces)
+        sphere.plot()
 
 
 def add_plane_parser(subparsers, parent_parsers):

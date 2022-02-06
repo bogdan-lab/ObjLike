@@ -2,7 +2,19 @@ from itertools import tee
 from typing import List, Tuple, Iterable
 from functools import reduce
 import numpy as np
+
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+
 from primitives import Point, FaceCollection, Angle
+
+
+# TODO Add wrold class
+# TODO Prepare test script where we use everything together
+# TODO Object.plot() should be able to save figure. or return it instead of showing
+# TODO think how to check that all face normals are correct
+# TODO add method to invert face normals
 
 
 # TODO replace by itertools.pairwise when it is available
@@ -29,7 +41,41 @@ def _select_points_with_r(points: Iterable[Point], radius: float,
                    points), key=lambda p: p.spherical[1])
 
 
-class Plane:
+def min_max(data: Iterable[float]) -> Tuple[float]:
+    it1, it2 = tee(data)
+    return (min(it1), max(it2))
+
+
+class Object:
+    def move(self, x: float = 0, y: float = 0, z: float = 0) -> None:
+        self.description.move(x, y, z)
+
+    def rotate(self, x=Angle(0), y=Angle(0), z=Angle(0)) -> None:
+        self.description.rotate(x, y, z)
+
+    def accept_transformations(self) -> None:
+        self.description.accept_transformations()
+
+    def save_to_file(self, filename: str) -> None:
+        self.description.save_to_file(filename)
+
+    def plot(self) -> None:
+        fig = plt.figure()
+        ax = Axes3D(fig)
+        ax.set_xlim3d(min_max(map(lambda p: p.real.x, self.description.points)))
+        ax.set_ylim3d(min_max(map(lambda p: p.real.y, self.description.points)))
+        ax.set_zlim3d(min_max(map(lambda p: p.real.z, self.description.points)))
+        ax.set_xlabel("X")
+        ax.set_ylabel("Y")
+        ax.set_zlabel("Z")
+        fig.add_axes(ax, label="main")
+        faces = list(map(lambda face: (face[0].real, face[1].real, face[2].real),
+                         self.description.faced_points()))
+        ax.add_collection3d(Poly3DCollection(faces, edgecolor="black"))
+        plt.show()
+
+
+class Plane(Object):
     '''Simple rectangle in XY plane centered in point (0, 0, 0)'''
     def __init__(self, width: float, height: float) -> None:
         self.description = FaceCollection()
@@ -41,7 +87,7 @@ class Plane:
         self.description.add_face(left_bot, right_top, left_top)
 
 
-class Box:
+class Box(Object):
     '''Simple box which diagonals crosses in (0, 0, 0)'''
     def __init__(self, width: float, height: float, depth: float) -> None:
         bot = Plane(width=width, height=depth).description.move(z=-height/2)
@@ -60,7 +106,7 @@ class Box:
             self.description = FaceCollection.merge(self.description, pl)
 
 
-class CircleSegment:
+class CircleSegment(Object):
     '''Circle segment in xy plane with center in (0, 0, 0).
     If one need to create CircleSegment(0, 2*np.pi) one should use Circle
     class instead'''
@@ -103,7 +149,7 @@ class CircleSegment:
                     self.description, add_descr)
 
 
-class Circle:
+class Circle(Object):
     '''Circle in xy plane with center in (0, 0, 0)'''
     def __init__(self, radius: float, layer_num: int) -> None:
         self.description = FaceCollection()
@@ -115,7 +161,7 @@ class Circle:
                     self.description, add_descr)
 
 
-class Tube:
+class Tube(Object):
     '''Tube parallel to Z axis. Tube center point is in (0, 0, 0)'''
     @staticmethod
     def _connect_layers(faces: FaceCollection, prev_layer: List[Point],
@@ -141,7 +187,7 @@ class Tube:
             Tube._connect_layers(self.description, prev, curr)
 
 
-class Cylinder:
+class Cylinder(Object):
     '''Simple cylinder parallel to Z axis with base circle center in (0, 0, 0)
     '''
     def __init__(self, radius: float, height: float, r_layer_num: int,
@@ -161,7 +207,7 @@ class Cylinder:
             self.description = FaceCollection.merge(self.description, descr)
 
 
-class Cone:
+class Cone(Object):
     '''Simple cone parallel to Z axis with base circle center in (0, 0, 0)'''
     def __init__(self, radius: float, height: float, layer_num: int) -> None:
         bot_descr = Circle(radius, layer_num).description
@@ -174,7 +220,7 @@ class Cone:
         self.description = FaceCollection.merge(side_descr, bot_descr)
 
 
-class Sphere:
+class Sphere(Object):
     '''Simple sphere with center in (0, 0, 0)'''
     @staticmethod
     def _between_points_on_sphere(p1: Point, p2: Point) -> Point:
