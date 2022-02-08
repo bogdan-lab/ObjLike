@@ -1,5 +1,5 @@
 import numpy as np
-from object_collection import Plane, CircleSegment, Circle, Tube, Cylinder, Cone, Box, Sphere
+from object_collection import Plane, CircleSegment, Circle, Tube, Cylinder, Cone, Box, Sphere, World
 from primitives import Angle, Point
 
 
@@ -182,3 +182,25 @@ def test_sphere_creation_split_3():
     assert len(sph.description.faces) == 128
     assert len(sph.description.points) == 66
     assert sum(np.isclose(p.spherical[0], 7) for p in sph.description.points) == 66
+
+
+def test_world_add_object():
+    pl1 = Plane(width=3, height=5)
+    pl1.rotate(x=Angle(np.pi/2))
+    pl1.move(y=10)
+    pl1.accept_transformations()
+    pl1.rotate(x=Angle(np.pi/2))
+    pl2 = Plane(width=10, height=8)
+    world = World()
+    world.add_object(pl1)
+    world.add_object(pl2)
+    assert len(world.description.faces) == 4
+    assert len(world.description.points) == 8
+    assert sum(np.isclose(p.real.z, 0) for p in world.description.points) == 4
+    assert sum(np.isclose(p.real.z, 10) for p in world.description.points) == 4
+    assert sum(np.isclose(p.real.z, 2.5) for p in pl1.description.points) == 2
+    assert sum(np.isclose(p.real.z, -2.5) for p in pl1.description.points) == 2
+    assert all(x == 0 for x in pl1.description.moves.values())
+    assert pl1.description.rotations['x'] == Angle(np.pi/2)
+    assert pl1.description.rotations['y'] == Angle(0)
+    assert pl1.description.rotations['z'] == Angle(0)

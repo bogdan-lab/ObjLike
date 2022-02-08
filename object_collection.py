@@ -1,3 +1,4 @@
+from copy import deepcopy
 from itertools import tee
 from typing import List, Tuple, Iterable
 from functools import reduce
@@ -10,12 +11,13 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from primitives import Point, FaceCollection, Angle
 
 
-# TODO Add wrold class
+# TODO Description should be a super class field?
 # TODO Prepare test script where we use everything together
 # TODO Object.plot() should be able to save figure. or return it instead of showing
 # TODO think how to check that all face normals are correct
 # TODO add method to invert face normals
-
+# TODO Load world from file
+# TODO delete objects from world?
 
 # TODO replace by itertools.pairwise when it is available
 def pairwise(iterable):
@@ -253,3 +255,23 @@ class Sphere(Object):
         self.description = FaceCollection()
         for f in faces:
             self.description.add_face(*f)
+
+
+class World(Object):
+    '''Aggregation of different objects'''
+    def __init__(self) -> None:
+        self.description = FaceCollection()
+
+    def add_object(self, obj: Object) -> None:
+        '''Adds object to the world'''
+        if (any(x != 0 for x in self.description.moves.values()) or
+            any(x != Angle(0) for x in self.description.rotations.values())):
+            raise RuntimeError("Cannot add object to the world with not"
+                               "accepted transformations")
+        if not isinstance(obj, Object):
+            raise TypeError("Only object can be added to the world")
+        input_description = FaceCollection()
+        input_description.points = obj.description.get_transformed_points()
+        input_description.faces = deepcopy(obj.description.faces)
+        self.description = FaceCollection.merge(self.description,
+                                                input_description)
