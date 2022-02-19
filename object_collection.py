@@ -11,7 +11,6 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from primitives import Point, FaceCollection, Angle
 
 
-# TODO Description should be a super class field?
 # TODO Prepare test script where we use everything together
 # TODO Object.plot() should be able to save figure. or return it instead of showing
 # TODO think how to check that all face normals are correct
@@ -49,6 +48,10 @@ def min_max(data: Iterable[float]) -> Tuple[float]:
 
 
 class Object:
+
+    def __init__(self) -> None:
+        self.description = FaceCollection()
+
     def move(self, x: float = 0, y: float = 0, z: float = 0) -> None:
         self.description.move(x, y, z)
 
@@ -80,7 +83,7 @@ class Object:
 class Plane(Object):
     '''Simple rectangle in XY plane centered in point (0, 0, 0)'''
     def __init__(self, width: float, height: float) -> None:
-        self.description = FaceCollection()
+        super().__init__()
         left_bot = Point(-width/2, -height/2, 0)
         left_top = Point(-width/2, height/2, 0)
         right_bot = Point(width/2, -height/2, 0)
@@ -92,6 +95,7 @@ class Plane(Object):
 class Box(Object):
     '''Simple box which diagonals crosses in (0, 0, 0)'''
     def __init__(self, width: float, height: float, depth: float) -> None:
+        super().__init__()
         bot = Plane(width=width, height=depth).description.move(z=-height/2)
         top = Plane(width=width, height=depth).description.move(z=height/2)
         right = Plane(width=height, height=depth).description
@@ -102,7 +106,6 @@ class Box(Object):
         front.rotate(x=Angle(np.pi/2)).move(y=-depth/2)
         back = Plane(width=width, height=height).description
         back.rotate(x=Angle(np.pi/2)).move(y=depth/2)
-        self.description = FaceCollection()
         for pl in (bot, top, right, left, front, back):
             pl.accept_transformations()
             self.description = FaceCollection.merge(self.description, pl)
@@ -142,7 +145,7 @@ class CircleSegment(Object):
                  layer_num: int) -> None:
         if phi_to <= phi_from:
             raise ValueError("Incorrect range for the circcle segment.")
-        self.description = FaceCollection()
+        super().__init__()
         quant_num = int(np.ceil((phi_to - phi_from).value / (2*np.pi / 3)))
         angles = Angle.linspace(phi_from, phi_to, quant_num+1, endpoint=True)
         for lo, hi in pairwise(angles):
@@ -154,7 +157,7 @@ class CircleSegment(Object):
 class Circle(Object):
     '''Circle in xy plane with center in (0, 0, 0)'''
     def __init__(self, radius: float, layer_num: int) -> None:
-        self.description = FaceCollection()
+        super().__init__()
         angles = Angle.linspace(Angle(0), Angle(2*np.pi), 7, endpoint=True)
         for lo, hi in pairwise(angles):
             add_descr = CircleSegment._build_segment_quant(
@@ -176,6 +179,7 @@ class Tube(Object):
 
     def __init__(self, radius: float, height: float, r_layer_num: int,
                  h_layer_num: int) -> None:
+        super().__init__()
         angles = Angle.linspace(Angle(0), Angle(2*np.pi), 6*r_layer_num + 1,
                                 endpoint=True)
         heights = np.linspace(0, height, h_layer_num+1, endpoint=True)
@@ -184,7 +188,6 @@ class Tube(Object):
             point_layers.append([
                     Point.from_spherical(radius, phi, Angle(np.pi/2)).move(z=h)
                     for phi in angles])
-        self.description = FaceCollection()
         for prev, curr in pairwise(point_layers):
             Tube._connect_layers(self.description, prev, curr)
 
@@ -194,6 +197,7 @@ class Cylinder(Object):
     '''
     def __init__(self, radius: float, height: float, r_layer_num: int,
                  h_layer_num: int) -> None:
+        super().__init__()
         bot_descr = Circle(radius, r_layer_num).description
         top_base = Circle(radius, r_layer_num).description.move(z=height)
         top_base.accept_transformations()
@@ -202,7 +206,6 @@ class Cylinder(Object):
         point_layers = []
         for h in heights:
             point_layers.append([p.move(z=h) for p in _last_cycled(outer)])
-        self.description = FaceCollection()
         for prev, curr in pairwise(point_layers):
             Tube._connect_layers(self.description, prev, curr)
         for descr in (bot_descr, top_base):
@@ -212,6 +215,7 @@ class Cylinder(Object):
 class Cone(Object):
     '''Simple cone parallel to Z axis with base circle center in (0, 0, 0)'''
     def __init__(self, radius: float, height: float, layer_num: int) -> None:
+        super().__init__()
         bot_descr = Circle(radius, layer_num).description
         side_descr = Circle(radius, layer_num).description
         radius_height_pairs = zip(np.linspace(0, radius, layer_num+1),
@@ -241,6 +245,7 @@ class Sphere(Object):
         return ((p1, ml, mb), (ml, mr, mb), (mb, mr, p3), (ml, p2, mr))
 
     def __init__(self, radius: float, split_num: int) -> None:
+        super().__init__()
         top = Point(0, 0, radius)
         xp = Point(radius, 0, 0)
         yp = Point(0, radius, 0)
@@ -252,16 +257,12 @@ class Sphere(Object):
         for _ in range(split_num-1):
             faces = reduce(lambda initial, f: initial + Sphere._split_face(*f),
                            faces, tuple())
-        self.description = FaceCollection()
         for f in faces:
             self.description.add_face(*f)
 
 
 class World(Object):
     '''Aggregation of different objects'''
-    def __init__(self) -> None:
-        self.description = FaceCollection()
-
     def add_object(self, obj: Object) -> None:
         '''Adds object to the world'''
         if (any(x != 0 for x in self.description.moves.values()) or
