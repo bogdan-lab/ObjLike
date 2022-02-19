@@ -11,6 +11,8 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from primitives import Point, FaceCollection, Angle
 
 
+# TODO add some easy was in order to get object boundaries - useful when moving one object onto another
+# TODO Add possibility to create cone without base! tube analogue
 # TODO Prepare test script where we use everything together
 # TODO Object.plot() should be able to save figure. or return it instead of showing
 # TODO think how to check that all face normals are correct
