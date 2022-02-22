@@ -1,65 +1,77 @@
 import numpy as np
 from primitives import Angle
-from object_collection import Cylinder, Cone, Box, Sphere, Tube, World
+from object_collection import Cylinder, Box, Sphere, Tube, World, Plane
 
 
 def create_tube_wheel(width, radius):
-    radial_layer_num = 3
-    wheel = World()
-    tube = Tube(radius=radius, height=width,
-                r_layer_num=radial_layer_num, h_layer_num=1)
-    tube.move(z=-width/2)
-    tube.accept_transformations()
-    tube.rotate(y=Angle(np.pi/2))
-    tube.accept_transformations()
-    wheel.add_object(tube)
-    cone = Cone(radius=radius, height=width/8, layer_num=radial_layer_num)
-    cone.rotate(y=Angle(np.pi/2))
-    cone.move(x=width/2)
-    cone.accept_transformations()
-    wheel.add_object(cone)
-    cone.rotate(z=Angle(np.pi))
-    cone.accept_transformations()
-    wheel.add_object(cone)
+    wheel = Cylinder(radius=radius, height=width, r_layer_num=3, h_layer_num=3)
+    wheel.move(z=-width/2)
+    wheel.accept_transformations()
+    wheel.rotate(y=Angle(np.pi/2))
+    wheel.accept_transformations()
     return wheel
 
 
 def main():
     world = World()
-    wheel_radius = 3
-    wheel_width = 30
-    wheel = create_tube_wheel(wheel_width, wheel_radius)
+    wheel = create_tube_wheel(width=30, radius=1)
     world.add_object(wheel)
-    wheel.move(y=2*wheel_radius)
+    wheel.move(y=2*wheel.radius)
     wheel.accept_transformations()
     world.add_object(wheel)
-    wheel.move(y=-4*wheel_radius)
+    wheel.move(y=-4*wheel.radius)
     wheel.accept_transformations()
     world.add_object(wheel)
-    small_wheel_radius = wheel_radius/2
-    small_wheel = create_tube_wheel(wheel_width, small_wheel_radius)
-    small_wheel.move(y=np.sqrt(2)*wheel_radius + 2*wheel_radius,
-                     z=small_wheel_radius)
+    wheel.move(y=-2*wheel.radius)
+    wheel.accept_transformations()
+    world.add_object(wheel)
+    wheel.move(y=8*wheel.radius)
+    wheel.accept_transformations()
+    world.add_object(wheel)
+
+    small_wheel = create_tube_wheel(wheel.height, wheel.radius/2)
+    small_wheel.move(y=np.sqrt(2)*wheel.radius + 4*wheel.radius,
+                     z=small_wheel.radius)
     small_wheel.accept_transformations()
     world.add_object(small_wheel)
     small_wheel.rotate(z=Angle(np.pi))
     small_wheel.accept_transformations()
     world.add_object(small_wheel)
-    box_height = wheel_radius/2
-    box = Box(width=wheel_width, height=box_height, depth=9*wheel_radius)
-    box.move(z=box_height/2 + wheel_radius)
+
+    box = Box(width=1.15*wheel.height, height=wheel.radius,
+              depth=13*wheel.radius)
+    box.move(z=box.height/2 + world.get_max_z())
     box.accept_transformations()
     world.add_object(box)
-    box_above = Box(width=0.7*wheel_width, height=box_height, depth=4*wheel_radius)
-    box_above.move(z=3*box_height/2 + wheel_radius)
+
+    pos_plane = Plane(width=small_wheel.radius, height=box.depth)
+    pos_plane.rotate(y=Angle(np.pi/2))
+    pos_plane.move(x=world.get_max_x(), z=box.get_min_z() - pos_plane.width/2)
+    pos_plane.accept_transformations()
+    world.add_object(pos_plane)
+    pos_plane.rotate(z=Angle(np.pi))
+    pos_plane.accept_transformations()
+    world.add_object(pos_plane)
+
+    box_above = Box(width=0.7*wheel.height, height=0.75*wheel.radius,
+                    depth=4*wheel.radius)
+    box_above.move(z=box_above.height/2 + world.get_max_z())
     box_above.accept_transformations()
-    tube = Tube(radius=box_height/4, height=3*wheel_radius, r_layer_num=2,
-                h_layer_num=1)
+    world.add_object(box_above)
+
+    tube = Tube(radius=box_above.height/4, height=8*wheel.radius,
+                r_layer_num=2, h_layer_num=4)
     tube.rotate(x=Angle(np.pi/2))
-    tube.move(y=-2*wheel_radius, z=wheel_radius + 1.5*box_height)
+    tube.move(y=-2*wheel.radius,
+              z=0.5*(box_above.get_min_z() + box_above.get_max_z()))
     tube.accept_transformations()
     world.add_object(tube)
-    world.add_object(box_above)
+
+    sphere = Sphere(radius=tube.radius, split_num=3)
+    sphere.move(z=0.5*(tube.get_min_z() + tube.get_max_z()),
+                y=world.get_min_y() - tube.height/2)
+    sphere.accept_transformations()
+    world.add_object(sphere)
     world.plot()
 
 

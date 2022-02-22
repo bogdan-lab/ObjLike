@@ -11,7 +11,6 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from primitives import Point, FaceCollection, Angle
 
 
-# TODO add some easy was in order to get object boundaries - useful when moving one object onto another
 # TODO Add possibility to create cone without base! tube analogue
 # TODO Prepare test script where we use everything together
 # TODO Object.plot() should be able to save figure. or return it instead of showing
@@ -44,11 +43,6 @@ def _select_points_with_r(points: Iterable[Point], radius: float,
                    points), key=lambda p: p.spherical[1])
 
 
-def min_max(data: Iterable[float]) -> Tuple[float]:
-    it1, it2 = tee(data)
-    return (min(it1), max(it2))
-
-
 class Object:
 
     def __init__(self) -> None:
@@ -66,12 +60,30 @@ class Object:
     def save_to_file(self, filename: str) -> None:
         self.description.save_to_file(filename)
 
+    def get_max_x(self) -> float:
+        return max(map(lambda p: p.real.x, self.description.points))
+
+    def get_min_x(self) -> float:
+        return min(map(lambda p: p.real.x, self.description.points))
+
+    def get_max_y(self) -> float:
+        return max(map(lambda p: p.real.y, self.description.points))
+
+    def get_min_y(self) -> float:
+        return min(map(lambda p: p.real.y, self.description.points))
+
+    def get_max_z(self) -> float:
+        return max(map(lambda p: p.real.z, self.description.points))
+
+    def get_min_z(self) -> float:
+        return min(map(lambda p: p.real.z, self.description.points))
+
     def plot(self) -> None:
         fig = plt.figure()
         ax = Axes3D(fig)
-        ax.set_xlim3d(min_max(map(lambda p: p.real.x, self.description.points)))
-        ax.set_ylim3d(min_max(map(lambda p: p.real.y, self.description.points)))
-        ax.set_zlim3d(min_max(map(lambda p: p.real.z, self.description.points)))
+        ax.set_xlim3d(self.get_min_x(), self.get_max_x())
+        ax.set_ylim3d(self.get_min_y(), self.get_max_y())
+        ax.set_zlim3d(self.get_min_z(), self.get_max_z())
         ax.set_xlabel("X")
         ax.set_ylabel("Y")
         ax.set_zlabel("Z")
@@ -86,6 +98,8 @@ class Plane(Object):
     '''Simple rectangle in XY plane centered in point (0, 0, 0)'''
     def __init__(self, width: float, height: float) -> None:
         super().__init__()
+        self.width = width
+        self.height = height
         left_bot = Point(-width/2, -height/2, 0)
         left_top = Point(-width/2, height/2, 0)
         right_bot = Point(width/2, -height/2, 0)
@@ -98,6 +112,9 @@ class Box(Object):
     '''Simple box which diagonals crosses in (0, 0, 0)'''
     def __init__(self, width: float, height: float, depth: float) -> None:
         super().__init__()
+        self.width = width
+        self.height = height
+        self.depth = depth
         bot = Plane(width=width, height=depth).description.move(z=-height/2)
         top = Plane(width=width, height=depth).description.move(z=height/2)
         right = Plane(width=height, height=depth).description
@@ -148,6 +165,10 @@ class CircleSegment(Object):
         if phi_to <= phi_from:
             raise ValueError("Incorrect range for the circcle segment.")
         super().__init__()
+        self.radius = radius
+        self.phi_from = phi_from
+        self.phi_to = phi_to
+        self.layer_num = layer_num
         quant_num = int(np.ceil((phi_to - phi_from).value / (2*np.pi / 3)))
         angles = Angle.linspace(phi_from, phi_to, quant_num+1, endpoint=True)
         for lo, hi in pairwise(angles):
@@ -160,6 +181,8 @@ class Circle(Object):
     '''Circle in xy plane with center in (0, 0, 0)'''
     def __init__(self, radius: float, layer_num: int) -> None:
         super().__init__()
+        self.radius = radius
+        self.layer_num = layer_num
         angles = Angle.linspace(Angle(0), Angle(2*np.pi), 7, endpoint=True)
         for lo, hi in pairwise(angles):
             add_descr = CircleSegment._build_segment_quant(
@@ -182,6 +205,10 @@ class Tube(Object):
     def __init__(self, radius: float, height: float, r_layer_num: int,
                  h_layer_num: int) -> None:
         super().__init__()
+        self.radius = radius
+        self.height = height
+        self.r_layer_num = r_layer_num
+        self.h_layer_num = h_layer_num
         angles = Angle.linspace(Angle(0), Angle(2*np.pi), 6*r_layer_num + 1,
                                 endpoint=True)
         heights = np.linspace(0, height, h_layer_num+1, endpoint=True)
@@ -200,6 +227,10 @@ class Cylinder(Object):
     def __init__(self, radius: float, height: float, r_layer_num: int,
                  h_layer_num: int) -> None:
         super().__init__()
+        self.radius = radius
+        self.height = height
+        self.r_layer_num = r_layer_num
+        self.h_layer_num = h_layer_num
         bot_descr = Circle(radius, r_layer_num).description
         top_base = Circle(radius, r_layer_num).description.move(z=height)
         top_base.accept_transformations()
@@ -218,6 +249,9 @@ class Cone(Object):
     '''Simple cone parallel to Z axis with base circle center in (0, 0, 0)'''
     def __init__(self, radius: float, height: float, layer_num: int) -> None:
         super().__init__()
+        self.radius = radius
+        self.height = height
+        self.layer_num = layer_num
         bot_descr = Circle(radius, layer_num).description
         side_descr = Circle(radius, layer_num).description
         radius_height_pairs = zip(np.linspace(0, radius, layer_num+1),
@@ -248,6 +282,8 @@ class Sphere(Object):
 
     def __init__(self, radius: float, split_num: int) -> None:
         super().__init__()
+        self.radius = radius
+        self.split_num = split_num
         top = Point(0, 0, radius)
         xp = Point(radius, 0, 0)
         yp = Point(0, radius, 0)
