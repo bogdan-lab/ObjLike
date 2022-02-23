@@ -134,7 +134,7 @@ def test_cone_creation_1_layer():
     assert sum(np.isclose(p.real.z, 0) for p in cone.description.points) == 7
     assert Point(0, 0, 0) in cone.description.points
     assert Point(0, 0, 2) in cone.description.points
-    assert sum(np.isclose(p.spherical[0], 5) for p in cone.description.points) == 6
+    assert sum(np.isclose(p.spherical.r, 5) for p in cone.description.points) == 6
 
 
 def test_cone_creation_3_layer():
@@ -144,9 +144,9 @@ def test_cone_creation_3_layer():
     assert sum(np.isclose(p.real.z, 0) for p in cone.description.points) == 37
     assert Point(0, 0, 0) in cone.description.points
     assert Point(0, 0, 18) in cone.description.points
-    assert sum(np.isclose(p.spherical[0], 3) for p in cone.description.points) == 6
-    assert sum(np.isclose(p.spherical[0], 6) for p in cone.description.points) == 12
-    assert sum(np.isclose(p.spherical[0], 9) for p in cone.description.points) == 18
+    assert sum(np.isclose(p.spherical.r, 3) for p in cone.description.points) == 6
+    assert sum(np.isclose(p.spherical.r, 6) for p in cone.description.points) == 12
+    assert sum(np.isclose(p.spherical.r, 9) for p in cone.description.points) == 18
     assert sum(np.isclose(p.real.z, 6) for p in cone.description.points) == 12
     assert sum(np.isclose(p.real.z, 12) for p in cone.description.points) == 6
 
@@ -157,7 +157,7 @@ def test_cone_no_base_creation_1_layer():
     assert len(cone.description.points) == 7
     assert sum(np.isclose(p.real.z, 0) for p in cone.description.points) == 6
     assert Point(0, 0, 2) in cone.description.points
-    assert sum(np.isclose(p.spherical[0], 5) for p in cone.description.points) == 6
+    assert sum(np.isclose(p.spherical.r, 5) for p in cone.description.points) == 6
 
 
 def test_cone_no_base_creation_3_layer():
@@ -166,7 +166,7 @@ def test_cone_no_base_creation_3_layer():
     assert len(cone.description.points) == 37
     assert sum(np.isclose(p.real.z, 0) for p in cone.description.points) == 18
     assert Point(0, 0, 18) in cone.description.points
-    assert sum(np.isclose(p.spherical[0], 9) for p in cone.description.points) == 18
+    assert sum(np.isclose(p.spherical.r, 9) for p in cone.description.points) == 18
     assert sum(np.isclose(p.real.z, 6) for p in cone.description.points) == 12
     assert sum(np.isclose(p.real.z, 12) for p in cone.description.points) == 6
 
@@ -188,21 +188,21 @@ def test_sphere_creation_split_1():
     sph = Sphere(radius=5, split_num=1)
     assert len(sph.description.faces) == 8
     assert len(sph.description.points) == 6
-    assert sum(np.isclose(p.spherical[0], 5) for p in sph.description.points) == 6
+    assert sum(np.isclose(p.spherical.r, 5) for p in sph.description.points) == 6
 
 
 def test_sphere_creation_split_2():
     sph = Sphere(radius=7, split_num=2)
     assert len(sph.description.faces) == 32
     assert len(sph.description.points) == 18
-    assert sum(np.isclose(p.spherical[0], 7) for p in sph.description.points) == 18
+    assert sum(np.isclose(p.spherical.r, 7) for p in sph.description.points) == 18
 
 
 def test_sphere_creation_split_3():
     sph = Sphere(radius=7, split_num=3)
     assert len(sph.description.faces) == 128
     assert len(sph.description.points) == 66
-    assert sum(np.isclose(p.spherical[0], 7) for p in sph.description.points) == 66
+    assert sum(np.isclose(p.spherical.r, 7) for p in sph.description.points) == 66
 
 
 def test_world_add_object():
