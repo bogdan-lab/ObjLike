@@ -84,7 +84,7 @@ class Point:
         return hash(self.real)
 
     def __str__(self) -> str:
-        return f"({self.real[0]}, {self.real[1]}, {self.real[2]})"
+        return f"({self.real.x}, {self.real.y}, {self.real.z})"
 
     def __repr__(self) -> str:
         return str(self)

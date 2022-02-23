@@ -37,8 +37,8 @@ def _select_points_with_r(points: Iterable[Point], radius: float,
     '''Returns all points with radius close to the given, sorted by phi angle
     '''
     return sorted(
-            filter(lambda p: np.isclose(p.spherical[0], radius, atol=tol),
-                   points), key=lambda p: p.spherical[1])
+            filter(lambda p: np.isclose(p.spherical.r, radius, atol=tol),
+                   points), key=lambda p: p.spherical.phi)
 
 
 class Object:
@@ -282,11 +282,11 @@ class Sphere(Object):
     @staticmethod
     def _between_points_on_sphere(p1: Point, p2: Point) -> Point:
         '''Expects that p1 and p2 are on the sphere'''
-        ml = Point((p1.real[0] + p2.real[0])/2,
-                   (p1.real[1] + p2.real[1])/2,
-                   (p1.real[2] + p2.real[2])/2)
-        return Point.from_spherical(0.5*(p1.spherical[0] + p2.spherical[0]),
-                                    ml.spherical[1], ml.spherical[2])
+        ml = Point((p1.real.x + p2.real.x)/2,
+                   (p1.real.y + p2.real.y)/2,
+                   (p1.real.z + p2.real.z)/2)
+        return Point.from_spherical(0.5*(p1.spherical.r + p2.spherical.r),
+                                    ml.spherical.phi, ml.spherical.theta)
 
     @staticmethod
     def _split_face(p1: Point, p2: Point, p3: Point):
