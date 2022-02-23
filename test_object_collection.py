@@ -1,5 +1,5 @@
 import numpy as np
-from object_collection import Plane, CircleSegment, Circle, Tube, Cylinder, Cone, Box, Sphere, World
+from object_collection import Plane, CircleSegment, Circle, Tube, Cylinder, Cone, ConeNoBase, Box, Sphere, World
 from primitives import Angle, Point
 
 
@@ -149,6 +149,27 @@ def test_cone_creation_3_layer():
     assert sum(np.isclose(p.spherical[0], 9) for p in cone.description.points) == 18
     assert sum(np.isclose(p.real[2], 6) for p in cone.description.points) == 12
     assert sum(np.isclose(p.real[2], 12) for p in cone.description.points) == 6
+
+
+def test_cone_no_base_creation_1_layer():
+    cone = ConeNoBase(radius=5, height=2, layer_num=1)
+    assert len(cone.description.faces) == 6
+    assert len(cone.description.points) == 7
+    assert sum(np.isclose(p.real[2], 0) for p in cone.description.points) == 6
+    assert Point(0, 0, 2) in cone.description.points
+    assert sum(np.isclose(p.spherical[0], 5) for p in cone.description.points) == 6
+
+
+def test_cone_no_base_creation_3_layer():
+    cone = ConeNoBase(radius=9, height=18, layer_num=3)
+    assert len(cone.description.faces) == 54
+    assert len(cone.description.points) == 37
+    assert sum(np.isclose(p.real[2], 0) for p in cone.description.points) == 18
+    assert Point(0, 0, 18) in cone.description.points
+    assert sum(np.isclose(p.spherical[0], 9) for p in cone.description.points) == 18
+    assert sum(np.isclose(p.real[2], 6) for p in cone.description.points) == 12
+    assert sum(np.isclose(p.real[2], 12) for p in cone.description.points) == 6
+
 
 
 def test_box_creation():

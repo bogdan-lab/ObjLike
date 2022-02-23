@@ -11,8 +11,6 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from primitives import Point, FaceCollection, Angle
 
 
-# TODO Add possibility to create cone without base! tube analogue
-# TODO Prepare test script where we use everything together
 # TODO Object.plot() should be able to save figure. or return it instead of showing
 # TODO think how to check that all face normals are correct
 # TODO add method to invert face normals
@@ -260,6 +258,23 @@ class Cone(Object):
             for p in _select_points_with_r(side_descr.points, r):
                 p.move(z=h, inplace=True)
         self.description = FaceCollection.merge(side_descr, bot_descr)
+
+
+class ConeNoBase(Object):
+    '''Simple cone parallel to Z axis with base circle center in (0, 0, 0)
+        but without base plane'''
+    def __init__(self, radius: float, height: float, layer_num: int) -> None:
+        super().__init__()
+        self.radius = radius
+        self.height = height
+        self.layer_num = layer_num
+        side_descr = Circle(radius, layer_num).description
+        radius_height_pairs = zip(np.linspace(0, radius, layer_num+1),
+                                  np.linspace(height, 0, layer_num+1))
+        for r, h in radius_height_pairs:
+            for p in _select_points_with_r(side_descr.points, r):
+                p.move(z=h, inplace=True)
+        self.description = side_descr
 
 
 class Sphere(Object):
