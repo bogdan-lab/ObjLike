@@ -268,10 +268,10 @@ class FaceCollection:
         of data
         '''
         with open(filename, 'w') as fout:
-            fout.write(json.dumps({"moves": self.moves,
-               "rotations": {k: a.value for k, a in self.rotations.items()},
-               "points": [(p.real.x, p.real.y, p.real.z) for p in self.points],
-               "faces": list(self.faces)}))
+            json.dump({"moves": self.moves,
+                       "rotations": {k: a.value for k, a in self.rotations.items()},
+                       "points": [(p.real.x, p.real.y, p.real.z) for p in self.points],
+                       "faces": list(self.faces)}, fout)
 
     @classmethod
     def from_json_file(cls, filename: str) -> "FaceCollection":
