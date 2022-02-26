@@ -13,7 +13,7 @@ from primitives import Point, FaceCollection, Angle
 
 # TODO think how to check that all face normals are correct
 # TODO add method to invert face normals
-# TODO Load world from file
+
 # TODO delete objects from world?
 
 # TODO replace by itertools.pairwise when it is available
@@ -56,6 +56,11 @@ class Object:
 
     def save_to_file(self, filename: str) -> None:
         self.description.save_to_file(filename)
+
+    @classmethod
+    def from_json_file(cls, filename: str) -> "Object":
+        result = cls()
+        result.description = FaceCollection.from_json_file(filename)
 
     def get_max_x(self) -> float:
         return max(map(lambda p: p.real.x, self.description.points))

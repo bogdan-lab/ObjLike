@@ -1,4 +1,5 @@
 from typing import Tuple, List, Iterable
+import json
 from collections import namedtuple
 import numpy as np
 
@@ -256,17 +257,37 @@ class FaceCollection:
 
     def save_to_file(self, filename: str) -> None:
         '''Save current collection into given file.
-        File is rewritten. Two groups of point collections are saved:
-        self object points (sp) and transformed points (wp).
+        File is rewritten. File has json format with dictionary names:
+            moves
+            rotations
+            points
+            faces
+        Not applied modifications are stored in moves and rotations fields.
+        Points are saved in real coordinate form only
+        Saving and reading operation with collection does not cause the loss
+        of data
         '''
-        obj_pts_str = [f"sp {p.real.x} {p.real.y} {p.real.z}"
-                       for p in self.points.point_to_index]
-        face_str = [f"s {fc[0]} {fc[1]} {fc[2]}" for fc in self.faces]
-        moved_points = self.get_transformed_points()
-        mvd_pts_str = [f"wp {p.real.x} {p.real.y} {p.real.z}"
-                       for p in moved_points.point_to_index]
         with open(filename, 'w') as fout:
-            fout.write('\n'.join(obj_pts_str + mvd_pts_str + face_str))
+            fout.write(json.dumps({"moves": self.moves,
+               "rotations": {k: a.value for k, a in self.rotations.items()},
+               "points": [(p.real.x, p.real.y, p.real.z) for p in self.points],
+               "faces": list(self.faces)}))
+
+    @classmethod
+    def from_json_file(cls, filename: str) -> "FaceCollection":
+        '''Constructs FaceCollection according to the given json file.
+        It is expected that json file has the same format as described in
+        save_to_file'''
+        with open(filename, 'r') as fin:
+            content = json.load(fin)
+        result = cls()
+        result.moves = content['moves']
+        result.rotations = {k: Angle(v) for k, v in content['rotations'].items()}
+        result.points = PointCollection()
+        for p in content['points']:
+            result.points.add_point(Point(p[0], p[1], p[2]))
+        result.faces = set(tuple(f) for f in content["faces"])
+        return result
 
     @staticmethod
     def merge(lhs: 'FaceCollection',
