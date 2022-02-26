@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from primitives import Angle
 from object_collection import Cylinder, Box, Sphere, Tube, World, Plane
 
@@ -73,6 +74,7 @@ def main():
     sphere.accept_transformations()
     world.add_object(sphere)
     world.plot()
+    plt.show()
 
 
 if __name__ == "__main__":

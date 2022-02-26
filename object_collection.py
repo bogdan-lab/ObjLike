@@ -11,7 +11,6 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from primitives import Point, FaceCollection, Angle
 
 
-# TODO Object.plot() should be able to save figure. or return it instead of showing
 # TODO think how to check that all face normals are correct
 # TODO add method to invert face normals
 # TODO Load world from file
@@ -77,6 +76,7 @@ class Object:
         return min(map(lambda p: p.real.z, self.description.points))
 
     def plot(self) -> None:
+        ''' Returns figure with plotted object on it'''
         fig = plt.figure()
         ax = Axes3D(fig)
         ax.set_xlim3d(self.get_min_x(), self.get_max_x())
@@ -89,7 +89,7 @@ class Object:
         faces = list(map(lambda face: (face[0].real, face[1].real, face[2].real),
                          self.description.faced_points()))
         ax.add_collection3d(Poly3DCollection(faces, edgecolor="black"))
-        plt.show()
+        return fig
 
 
 class Plane(Object):
