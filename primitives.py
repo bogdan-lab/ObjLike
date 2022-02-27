@@ -1,4 +1,4 @@
-from typing import Tuple, List, Iterable
+from typing import List, Iterable, NamedTuple
 import json
 from collections import namedtuple
 import numpy as np
@@ -56,95 +56,142 @@ class Angle:
                                          endpoint=endpoint))
 
 
-RealCoordinates = namedtuple("RealCoordinates", ['x', 'y', 'z'])
-SphericalCoordinates = namedtuple("SphericalCoordinates", ['r', 'phi', 'theta'])
-
-
-class Point:
-
-    @staticmethod
-    def convert_spherical_point_to_real(p: SphericalCoordinates) -> RealCoordinates:
-        return RealCoordinates(p.r * np.cos(p.phi.value) * np.sin(p.theta.value),
-                               p.r * np.sin(p.phi.value) * np.sin(p.theta.value),
-                               p.r * np.cos(p.theta.value))
-
-    @staticmethod
-    def convert_real_point_to_spherical(p: RealCoordinates) -> SphericalCoordinates:
-        return SphericalCoordinates(np.sqrt(p.x**2 + p.y**2 + p.z**2),
-                                    Angle(np.arctan2(p.y, p.x)),
-                                    Angle(np.arctan2(np.sqrt(p.x**2 + p.y**2), p.z)))
-
-    def __init__(self, x: float, y: float, z: float) -> None:
-        self.real = RealCoordinates(round(x, 10), round(y, 10), round(z, 10))
-        self.spherical = Point.convert_real_point_to_spherical(self.real)
-
-    def __eq__(self, other: 'Point') -> bool:
-        return self.real == other.real
+class Point(NamedTuple):
+    x: float = 0
+    y: float = 0
+    z: float = 0
 
     def __hash__(self) -> int:
-        return hash(self.real)
+        return hash((self.x)*(self.y))
 
-    def __str__(self) -> str:
-        return f"({self.real.x}, {self.real.y}, {self.real.z})"
+    @property
+    def r(self) -> float:
+        return np.sqrt(self.x**2 + self.y**2 + self.z**2)
 
-    def __repr__(self) -> str:
-        return str(self)
+    @property
+    def phi(self) -> Angle:
+        return Angle(np.arctan2(self.y, self.x))
+
+    @property
+    def theta(self) -> Angle:
+        return Angle(np.arctan2(np.sqrt(self.x**2 + self.y**2), self.z))
 
     @classmethod
     def from_spherical(cls, r: float, phi: Angle, theta: Angle) -> 'Point':
-        real = Point.convert_spherical_point_to_real(SphericalCoordinates(r, phi, theta))
-        point = cls(real.x, real.y, real.z)
-        return point
+        return cls(r * np.cos(phi.value) * np.sin(theta.value),
+                   r * np.sin(phi.value) * np.sin(theta.value),
+                   r * np.cos(theta.value))
 
-    def move(self, x: float = 0, y: float = 0, z: float = 0,
-             inplace: bool = False) -> 'Point':
-        new_point = Point(self.real.x + x, self.real.y + y, self.real.z + z)
-        if inplace:
-            self.real = new_point.real
-            self.spherical = new_point.spherical
-        return new_point
+    def move(self, x: float = 0, y: float = 0, z: float = 0) -> 'Point':
+        '''Creates new point with coordinates shifted according to the
+        arguments.
+        '''
+        return Point(self.x+x, self.y+y, self.z+z)
 
-    def rotate_x(self, angle: Angle, inplace: bool = False) -> 'Point':
+    def rotate_x(self, angle: Angle) -> 'Point':
         '''Rotates point around x axis. Rotation is performed according to
-           the right hand rule
-        '''
-        x = self.real.x
-        y = np.cos(angle.value)*self.real.y - np.sin(angle.value)*self.real.z
-        z = np.sin(angle.value)*self.real.y + np.cos(angle.value)*self.real.z
-        new_point = Point(x, y, z)
-        if inplace:
-            self.real = new_point.real
-            self.spherical = new_point.spherical
-        return new_point
+           the right hand rule. Result of rotation is returned as new point'''
+        return Point(self.x,
+                     np.cos(angle.value)*self.y - np.sin(angle.value)*self.z,
+                     np.sin(angle.value)*self.y + np.cos(angle.value)*self.z)
 
-    def rotate_y(self, angle: Angle, inplace: bool = False) -> 'Point':
+    def rotate_y(self, angle: Angle) -> 'Point':
         '''Rotates point around y axis. Rotation is performed according to
-           the right hand rule
-        '''
-        x = np.cos(angle.value)*self.real.x + np.sin(angle.value)*self.real.z
-        y = self.real.y
-        z = -np.sin(angle.value)*self.real.x + np.cos(angle.value)*self.real.z
-        new_point = Point(x, y, z)
-        if inplace:
-            self.real = new_point.real
-            self.spherical = new_point.spherical
-        return new_point
+           the right hand rule. Result of rotation is returned as new point'''
+        return Point(np.cos(angle.value)*self.x + np.sin(angle.value)*self.z,
+                     self.y,
+                     -np.sin(angle.value)*self.x + np.cos(angle.value)*self.z)
 
-    def rotate_z(self, angle: Angle, inplace: bool = False) -> 'Point':
+    def rotate_z(self, angle: Angle) -> 'Point':
         '''Rotates point around z axis. Rotation is performed according to
-           the right hand rule
-        '''
-        x = np.cos(angle.value)*self.real.x - np.sin(angle.value)*self.real.y
-        y = np.sin(angle.value)*self.real.x + np.cos(angle.value)*self.real.y
-        z = self.real.z
-        new_point = Point(x, y, z)
-        if inplace:
-            self.real = new_point.real
-            self.spherical = new_point.spherical
-        return new_point
+           the right hand rule. Result of rotation is returned as new point'''
+        return Point(np.cos(angle.value)*self.x - np.sin(angle.value)*self.y,
+                     np.sin(angle.value)*self.x + np.cos(angle.value)*self.y,
+                     self.z)
 
-    def get_real_string(self) -> str:
-        return f"{self.real.x} {self.real.y} {self.real.z}"
+
+#class Point:
+#
+#    @staticmethod
+#    def convert_spherical_point_to_real(p: SphericalCoordinates) -> RealCoordinates:
+#        return RealCoordinates(p.r * np.cos(p.phi.value) * np.sin(p.theta.value),
+#                               p.r * np.sin(p.phi.value) * np.sin(p.theta.value),
+#                               p.r * np.cos(p.theta.value))
+#
+#    @staticmethod
+#    def convert_real_point_to_spherical(p: RealCoordinates) -> SphericalCoordinates:
+#        return SphericalCoordinates(np.sqrt(p.x**2 + p.y**2 + p.z**2),
+#                                    Angle(np.arctan2(p.y, p.x)),
+#                                    Angle(np.arctan2(np.sqrt(p.x**2 + p.y**2), p.z)))
+#
+#    def __init__(self, x: float, y: float, z: float) -> None:
+#        self.real = RealCoordinates(round(x, 10), round(y, 10), round(z, 10))
+#        self.spherical = Point.convert_real_point_to_spherical(self.real)
+#
+#    def __eq__(self, other: 'Point') -> bool:
+#        return self.real == other.real
+#
+#    def __hash__(self) -> int:
+#        return hash(self.real)
+#
+#    def __str__(self) -> str:
+#        return f"({self.real.x}, {self.real.y}, {self.real.z})"
+#
+#    def __repr__(self) -> str:
+#        return str(self)
+#
+#    @classmethod
+#    def from_spherical(cls, r: float, phi: Angle, theta: Angle) -> 'Point':
+#        real = Point.convert_spherical_point_to_real(SphericalCoordinates(r, phi, theta))
+#        point = cls(real.x, real.y, real.z)
+#        return point
+#
+#    def move(self, x: float = 0, y: float = 0, z: float = 0,
+#             inplace: bool = False) -> 'Point':
+#        new_point = Point(self.real.x + x, self.real.y + y, self.real.z + z)
+#        if inplace:
+#            self.real = new_point.real
+#            self.spherical = new_point.spherical
+#        return new_point
+#
+#    def rotate_x(self, angle: Angle, inplace: bool = False) -> 'Point':
+#        '''Rotates point around x axis. Rotation is performed according to
+#           the right hand rule
+#        '''
+#        x = self.real.x
+#        y = np.cos(angle.value)*self.real.y - np.sin(angle.value)*self.real.z
+#        z = np.sin(angle.value)*self.real.y + np.cos(angle.value)*self.real.z
+#        new_point = Point(x, y, z)
+#        if inplace:
+#            self.real = new_point.real
+#            self.spherical = new_point.spherical
+#        return new_point
+#
+#    def rotate_y(self, angle: Angle, inplace: bool = False) -> 'Point':
+#        '''Rotates point around y axis. Rotation is performed according to
+#           the right hand rule
+#        '''
+#        x = np.cos(angle.value)*self.real.x + np.sin(angle.value)*self.real.z
+#        y = self.real.y
+#        z = -np.sin(angle.value)*self.real.x + np.cos(angle.value)*self.real.z
+#        new_point = Point(x, y, z)
+#        if inplace:
+#            self.real = new_point.real
+#            self.spherical = new_point.spherical
+#        return new_point
+#
+#    def rotate_z(self, angle: Angle, inplace: bool = False) -> 'Point':
+#        '''Rotates point around z axis. Rotation is performed according to
+#           the right hand rule
+#        '''
+#        x = np.cos(angle.value)*self.real.x - np.sin(angle.value)*self.real.y
+#        y = np.sin(angle.value)*self.real.x + np.cos(angle.value)*self.real.y
+#        z = self.real.z
+#        new_point = Point(x, y, z)
+#        if inplace:
+#            self.real = new_point.real
+#            self.spherical = new_point.spherical
+#        return new_point
 
 
 class PointCollection:
@@ -184,13 +231,10 @@ class PointCollection:
              inplace: bool = False) -> 'PointCollection':
         new_pc = PointCollection()
         for p in self.point_to_index:
-            new_pc.add_point(p.move(x, y, z, inplace=False))
+            new_pc.add_point(p.move(x, y, z))
         if inplace:
             self.point_to_index = new_pc.point_to_index
         return new_pc
-
-    def get_file_str_content(self) -> List[str]:
-        return [f"p {p.get_real_string()}" for p in self.point_to_index]
 
 
 class FaceCollection:
@@ -247,11 +291,10 @@ class FaceCollection:
         '''
         moved_points = PointCollection()
         for p in self.points.point_to_index:
-            mp = p.rotate_x(self.rotations['x'], inplace=False)
-            mp.rotate_y(self.rotations['y'], inplace=True)
-            mp.rotate_z(self.rotations['z'], inplace=True)
-            mp.move(x=self.moves['x'], y=self.moves['y'], z=self.moves['z'],
-                    inplace=True)
+            mp = p.rotate_x(self.rotations['x'])
+            mp = mp.rotate_y(self.rotations['y'])
+            mp = mp.rotate_z(self.rotations['z'])
+            mp = mp.move(self.moves['x'], self.moves['y'], self.moves['z'])
             moved_points.add_point(mp)
         return moved_points
 
@@ -270,7 +313,7 @@ class FaceCollection:
         with open(filename, 'w') as fout:
             json.dump({"moves": self.moves,
                        "rotations": {k: a.value for k, a in self.rotations.items()},
-                       "points": [(p.real.x, p.real.y, p.real.z) for p in self.points],
+                       "points": list(self.points),
                        "faces": list(self.faces)}, fout)
 
     @classmethod
@@ -285,7 +328,7 @@ class FaceCollection:
         result.rotations = {k: Angle(v) for k, v in content['rotations'].items()}
         result.points = PointCollection()
         for p in content['points']:
-            result.points.add_point(Point(p[0], p[1], p[2]))
+            result.points.add_point(Point._make(p))
         result.faces = set(tuple(f) for f in content["faces"])
         return result
 

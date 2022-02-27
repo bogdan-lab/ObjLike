@@ -36,8 +36,8 @@ def _select_points_with_r(points: Iterable[Point], radius: float,
     '''Returns all points with radius close to the given, sorted by phi angle
     '''
     return sorted(
-            filter(lambda p: np.isclose(p.spherical.r, radius, atol=tol),
-                   points), key=lambda p: p.spherical.phi)
+            filter(lambda p: np.isclose(p.r, radius, atol=tol), points),
+            key=lambda p: p.phi)
 
 
 class Object:
@@ -63,22 +63,22 @@ class Object:
         result.description = FaceCollection.from_json_file(filename)
 
     def get_max_x(self) -> float:
-        return max(map(lambda p: p.real.x, self.description.points))
+        return max(map(lambda p: p.x, self.description.points))
 
     def get_min_x(self) -> float:
-        return min(map(lambda p: p.real.x, self.description.points))
+        return min(map(lambda p: p.x, self.description.points))
 
     def get_max_y(self) -> float:
-        return max(map(lambda p: p.real.y, self.description.points))
+        return max(map(lambda p: p.y, self.description.points))
 
     def get_min_y(self) -> float:
-        return min(map(lambda p: p.real.y, self.description.points))
+        return min(map(lambda p: p.y, self.description.points))
 
     def get_max_z(self) -> float:
-        return max(map(lambda p: p.real.z, self.description.points))
+        return max(map(lambda p: p.z, self.description.points))
 
     def get_min_z(self) -> float:
-        return min(map(lambda p: p.real.z, self.description.points))
+        return min(map(lambda p: p.z, self.description.points))
 
     def plot(self) -> None:
         ''' Returns figure with plotted object on it'''
@@ -91,7 +91,7 @@ class Object:
         ax.set_ylabel("Y")
         ax.set_zlabel("Z")
         fig.add_axes(ax, label="main")
-        faces = list(map(lambda face: (face[0].real, face[1].real, face[2].real),
+        faces = list(map(lambda face: (face[0], face[1], face[2]),
                          self.description.faced_points()))
         ax.add_collection3d(Poly3DCollection(faces, edgecolor="black"))
         return fig
@@ -248,23 +248,6 @@ class Cylinder(Object):
             self.description = FaceCollection.merge(self.description, descr)
 
 
-class Cone(Object):
-    '''Simple cone parallel to Z axis with base circle center in (0, 0, 0)'''
-    def __init__(self, radius: float, height: float, layer_num: int) -> None:
-        super().__init__()
-        self.radius = radius
-        self.height = height
-        self.layer_num = layer_num
-        bot_descr = Circle(radius, layer_num).description
-        side_descr = Circle(radius, layer_num).description
-        radius_height_pairs = zip(np.linspace(0, radius, layer_num+1),
-                                  np.linspace(height, 0, layer_num+1))
-        for r, h in radius_height_pairs:
-            for p in _select_points_with_r(side_descr.points, r):
-                p.move(z=h, inplace=True)
-        self.description = FaceCollection.merge(side_descr, bot_descr)
-
-
 class ConeNoBase(Object):
     '''Simple cone parallel to Z axis with base circle center in (0, 0, 0)
         but without base plane'''
@@ -274,12 +257,22 @@ class ConeNoBase(Object):
         self.height = height
         self.layer_num = layer_num
         side_descr = Circle(radius, layer_num).description
-        radius_height_pairs = zip(np.linspace(0, radius, layer_num+1),
-                                  np.linspace(height, 0, layer_num+1))
-        for r, h in radius_height_pairs:
-            for p in _select_points_with_r(side_descr.points, r):
-                p.move(z=h, inplace=True)
-        self.description = side_descr
+        for p1, p2, p3 in side_descr.faced_points():
+            self.description.add_face(p1.move(z=(radius - p1.r)/radius*height),
+                                      p2.move(z=(radius - p2.r)/radius*height),
+                                      p3.move(z=(radius - p3.r)/radius*height))
+
+
+class Cone(Object):
+    '''Simple cone parallel to Z axis with base circle center in (0, 0, 0)'''
+    def __init__(self, radius: float, height: float, layer_num: int) -> None:
+        super().__init__()
+        self.radius = radius
+        self.height = height
+        self.layer_num = layer_num
+        bot_descr = Circle(radius, layer_num).description
+        side_descr = ConeNoBase(radius, height, layer_num).description
+        self.description = FaceCollection.merge(side_descr, bot_descr)
 
 
 class Sphere(Object):
@@ -287,11 +280,10 @@ class Sphere(Object):
     @staticmethod
     def _between_points_on_sphere(p1: Point, p2: Point) -> Point:
         '''Expects that p1 and p2 are on the sphere'''
-        ml = Point((p1.real.x + p2.real.x)/2,
-                   (p1.real.y + p2.real.y)/2,
-                   (p1.real.z + p2.real.z)/2)
-        return Point.from_spherical(0.5*(p1.spherical.r + p2.spherical.r),
-                                    ml.spherical.phi, ml.spherical.theta)
+        ml = Point((p1.x + p2.x)/2,
+                   (p1.y + p2.y)/2,
+                   (p1.z + p2.z)/2)
+        return Point.from_spherical(0.5*(p1.r + p2.r), ml.phi, ml.theta)
 
     @staticmethod
     def _split_face(p1: Point, p2: Point, p3: Point):

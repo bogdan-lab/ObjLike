@@ -1,72 +1,19 @@
 import numpy as np
-from primitives import Point, PointCollection, FaceCollection, Angle, RealCoordinates, SphericalCoordinates
+from primitives import Point, PointCollection, FaceCollection, Angle
 
-
-def test_convert_spher_point_to_real():
-    assert all(np.isclose(
-            Point.convert_spherical_point_to_real(
-                    SphericalCoordinates(5, Angle(np.pi/2), Angle(np.pi))),
-                    RealCoordinates(0, 0, -5)))
-    assert all(np.isclose(
-            Point.convert_spherical_point_to_real(
-                    SphericalCoordinates(5, Angle(np.pi/2), Angle(np.pi/2))),
-                    RealCoordinates(0, 5, 0)))
-    assert all(np.isclose(
-            Point.convert_spherical_point_to_real(
-                    SphericalCoordinates(5, Angle(0), Angle(np.pi/2))),
-                    RealCoordinates(5, 0, 0)))
-    assert all(np.isclose(
-                 Point.convert_spherical_point_to_real(
-                         SphericalCoordinates(0, Angle(0), Angle(0))),
-                         RealCoordinates(0, 0, 0)))
-
-
-def test_convert_real_to_spher():
-    sph_point = Point.convert_real_point_to_spherical(RealCoordinates(0, 0, 0))
-    assert np.isclose(sph_point.r, 0)
-    assert np.isclose(sph_point.phi.value, 0)
-    assert np.isclose(sph_point.theta.value, 0)
-    sph_point = Point.convert_real_point_to_spherical(RealCoordinates(3, 0, 0))
-    assert np.isclose(sph_point.r, 3)
-    assert np.isclose(sph_point.phi.value, 0)
-    assert np.isclose(sph_point.theta.value, np.pi/2)
-    sph_point = Point.convert_real_point_to_spherical(RealCoordinates(0, 3, 0))
-    assert np.isclose(sph_point.r, 3)
-    assert np.isclose(sph_point.phi.value, np.pi/2)
-    assert np.isclose(sph_point.theta.value, np.pi/2)
-    sph_point = Point.convert_real_point_to_spherical(RealCoordinates(0, 0, 3))
-    assert np.isclose(sph_point.r, 3)
-    assert np.isclose(sph_point.phi.value, 0)
-    assert np.isclose(sph_point.theta.value, 0)
-
-
-def test_convert_both_ways():
-    sph_point = SphericalCoordinates(1, Angle(2), Angle(3))
-    res_sph = Point.convert_real_point_to_spherical(
-                    Point.convert_spherical_point_to_real(sph_point))
-    assert np.isclose(res_sph.r, sph_point.r)
-    assert np.isclose(res_sph.phi.value, sph_point.phi.value)
-    assert np.isclose(res_sph.theta.value, sph_point.theta.value)
-    real_point = RealCoordinates(1, 2, 3)
-    res_real = Point.convert_spherical_point_to_real(
-                    Point.convert_real_point_to_spherical(real_point))
-    assert all(np.isclose(real_point, res_real))
 
 
 def test_create_from_spherical():
     point = Point.from_spherical(5, Angle(np.pi/2), Angle(np.pi))
-    assert all(np.isclose(point.real, (0, 0, -5)))
+    assert all(np.isclose(point, (0, 0, -5)))
     point2 = Point.from_spherical(5, Angle(np.pi/2), Angle(np.pi/2))
-    assert all(np.isclose(point2.real, (0, 5, 0)))
+    assert all(np.isclose(point2, (0, 5, 0)))
 
 
 def test_move_point():
     point = Point(1, 2, 3)
-    assert point.move(3, 2, 1, inplace=False) == Point(4, 4, 4)
-    assert point.move(x=3,) == Point(4, 2, 3)
-    assert point == Point(1, 2, 3)
-    assert point.move(1, 1, 1, inplace=True) == Point(2, 3, 4)
-    assert point == Point(2, 3, 4)
+    assert point.move(3, 2, 1) == Point(4, 4, 4)
+    assert point.move(x=3) == Point(4, 2, 3)
 
 
 def test_point_rotate_x():
@@ -74,18 +21,10 @@ def test_point_rotate_x():
     assert all([Point(1, 0, 0) == point.rotate_x(Angle(alpha))
                for alpha in np.linspace(0, 5*np.pi, 100)])
     point = Point(0, 1, 0)
-    point.rotate_x(Angle(np.pi/2), inplace=True)
-    expected = Point(0, 0, 1)
-    assert all(np.isclose(point.real, expected.real))
-    point = Point(0, 1, 0)
-    point.rotate_x(Angle(-np.pi/2), inplace=True)
-    expected = Point(0, 0, -1)
-    assert all(np.isclose(point.real, expected.real))
-    point = Point(0, 1, 0)
-    res = point.rotate_x(Angle(np.pi/4), inplace=False)
-    expected = Point(0, np.sqrt(2)/2, np.sqrt(2)/2)
-    assert point == Point(0, 1, 0)
-    assert all(np.isclose(res.real, expected.real))
+    assert all(np.isclose(point.rotate_x(Angle(np.pi/2)), Point(0, 0, 1)))
+    assert all(np.isclose(point.rotate_x(Angle(-np.pi/2)), Point(0, 0, -1)))
+    assert all(np.isclose(point.rotate_x(Angle(np.pi/4)),
+                          Point(0, np.sqrt(2)/2, np.sqrt(2)/2)))
 
 
 def test_point_rotate_y():
@@ -93,18 +32,11 @@ def test_point_rotate_y():
     assert all([Point(0, 1, 0) == point.rotate_y(Angle(alpha))
                for alpha in np.linspace(0, 5*np.pi, 100)])
     point = Point(1, 0, 0)
-    point.rotate_y(Angle(np.pi/2), inplace=True)
-    expected = Point(0, 0, -1)
-    assert all(np.isclose(point.real, expected.real))
-    point = Point(1, 0, 0)
-    point.rotate_y(Angle(-np.pi/2), inplace=True)
-    expected = Point(0, 0, 1)
-    assert all(np.isclose(point.real, expected.real))
+    assert all(np.isclose(point.rotate_y(Angle(np.pi/2)), Point(0, 0, -1)))
+    assert all(np.isclose(point.rotate_y(Angle(-np.pi/2)), Point(0, 0, 1)))
     point = Point(0, 0, 1)
-    res = point.rotate_y(Angle(np.pi/4), inplace=False)
-    expected = Point(np.sqrt(2)/2, 0, np.sqrt(2)/2)
-    assert point == Point(0, 0, 1)
-    assert all(np.isclose(res.real, expected.real))
+    assert all(np.isclose(point.rotate_y(Angle(np.pi/4)),
+                          Point(np.sqrt(2)/2, 0, np.sqrt(2)/2)))
 
 
 def test_point_rotate_z():
@@ -112,18 +44,10 @@ def test_point_rotate_z():
     assert all([Point(0, 0, 1) == point.rotate_z(Angle(alpha))
                for alpha in np.linspace(0, 5*np.pi, 100)])
     point = Point(0, 1, 0)
-    point.rotate_z(Angle(np.pi/2), inplace=True)
-    expected = Point(-1, 0, 0)
-    assert all(np.isclose(point.real, expected.real))
-    point = Point(0, 1, 0)
-    point.rotate_z(Angle(-np.pi/2), inplace=True)
-    expected = Point(1, 0, 0)
-    assert all(np.isclose(point.real, expected.real))
-    point = Point(0, 1, 0)
-    res = point.rotate_z(Angle(np.pi/4), inplace=False)
-    expected = Point(-np.sqrt(2)/2, np.sqrt(2)/2, 0)
-    assert point == Point(0, 1, 0)
-    assert all(np.isclose(res.real, expected.real))
+    assert all(np.isclose(point.rotate_z(Angle(np.pi/2)), Point(-1, 0, 0)))
+    assert all(np.isclose(point.rotate_z(Angle(-np.pi/2)), Point(1, 0, 0)))
+    assert all(np.isclose(point.rotate_z(Angle(np.pi/4)),
+                          Point(-np.sqrt(2)/2, np.sqrt(2)/2, 0)))
 
 
 def test_collection_adding_points():
@@ -134,20 +58,6 @@ def test_collection_adding_points():
     assert collection.add_point(Point(1, 1, 1)) == 3
     assert collection.add_point(Point(0, 0, 0)) == 0
     assert collection.add_point(Point(1, 1, 1)) == 3
-
-
-def test_get_str_content():
-    collection = PointCollection()
-    collection.add_point(Point(0, 0, 0))
-    collection.add_point(Point(1, 0, 0))
-    collection.add_point(Point(1, 2, 0))
-    collection.add_point(Point(1, 2, 3))
-    data = collection.get_file_str_content()
-    assert len(data) == 4
-    assert data[0].strip() == 'p 0 0 0'
-    assert data[1].strip() == 'p 1 0 0'
-    assert data[2].strip() == 'p 1 2 0'
-    assert data[3].strip() == 'p 1 2 3'
 
 
 def test_move_point_collection_not_inplace():
@@ -237,7 +147,7 @@ def test_face_collection_accept_transformation_rotate_only():
                                           Point(0, 0, 1): 2}
     test.accept_transformations()
     assert test.rotations == {'x': Angle(0), 'y': Angle(0), 'z': Angle(0)}
-    real_points = [p.real for p in test.points]
+    real_points = list(test.points)
     assert len(real_points) == 3
     assert all(np.isclose(real_points[0], (0, 0, -1)))
     assert all(np.isclose(real_points[1], (1, 0, 0)))
