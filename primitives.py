@@ -120,6 +120,25 @@ class Point(NamedTuple):
                      self.z)
 
 
+class Vector(NamedTuple):
+    x: float = 0
+    y: float = 0
+    z: float = 0
+
+    @classmethod
+    def from_points(cls, start: Point, end: Point) -> 'Vector':
+        return cls(end.x - start.x, end.y - start.y, end.z - start.z)
+
+    def dot(self, other: 'Vector') -> float:
+        return self.x*other.x + self.y*other.y + self.z*other.z
+
+    def cross(self, other: 'Vector') -> 'Vector':
+        x = self.y * other.z - self.z * other.y
+        y = self.z * other.x - self.x * other.z
+        z = self.x * other.y - self.y * other.x
+        return Vector(x, y, z)
+
+
 class PointCollection:
 
     def __init__(self) -> None:

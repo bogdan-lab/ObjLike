@@ -1,5 +1,5 @@
 import numpy as np
-from primitives import Point, PointCollection, FaceCollection, Angle
+from primitives import Point, PointCollection, FaceCollection, Angle, Vector
 
 
 
@@ -228,3 +228,41 @@ def test_angle_linspace():
     assert res[1].value == values[1]
     assert res[2].value == values[2]
     assert res[3].value == values[0]
+
+
+def test_vector_creations():
+    assert Vector.from_points(Point(0, 0, 0), Point(0, 0, 1)) == Vector(0, 0, 1)
+    assert Vector.from_points(Point(0, 0, 0), Point(0, 1, 0)) == Vector(0, 1, 0)
+    assert Vector.from_points(Point(0, 0, 0), Point(1, 0, 0)) == Vector(1, 0, 0)
+    assert Vector.from_points(Point(1, 2, 3), Point(4, 9, 12)) == Vector(3, 7, 9)
+
+
+def test_vector_dot():
+    x = Vector(1, 0, 0)
+    assert x.dot(Vector(0.1, 0.1, 0.1)) > 0
+    assert x.dot(Vector(-0.1, 0.1, 0.1)) < 0
+    assert x.dot(Vector(0, 0.3, 2.1)) == 0
+    y = Vector(0, 1, 0)
+    assert y.dot(Vector(0.1, 0.1, 0.1)) > 0
+    assert y.dot(Vector(0.1, -0.1, 0.1)) < 0
+    assert y.dot(Vector(2, 0, 2.1)) == 0
+    z = Vector(0, 0, 1)
+    assert z.dot(Vector(0.1, 0.1, 0.1)) > 0
+    assert z.dot(Vector(0.1, 0.1, -0.1)) < 0
+    assert z.dot(Vector(2, 30, 0)) == 0
+
+
+def test_vector_cross():
+    x = Vector(1, 0, 0)
+    y = Vector(0, 1, 0)
+    z = Vector(0, 0, 1)
+    zero = Vector(0, 0, 0)
+    assert x.cross(y) == z
+    assert y.cross(x) == Vector(0, 0, -1)
+    assert z.cross(x) == y
+    assert x.cross(z) == Vector(0, -1, 0)
+    assert y.cross(z) == x
+    assert z.cross(y) == Vector(-1, 0, 0)
+    assert x.cross(x) == zero
+    assert y.cross(y) == zero
+    assert z.cross(z) == zero
