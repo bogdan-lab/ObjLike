@@ -1,6 +1,6 @@
 import numpy as np
 from object_collection import Plane, CircleSegment, Circle, Tube, Cylinder, Cone, ConeNoBase, Box, Sphere, World
-from primitives import Angle, Point
+from primitives import Angle, Point, Vector
 
 
 def test_plane_creation():
@@ -12,6 +12,11 @@ def test_plane_creation():
     assert sum(np.isclose(p.y, 2) for p in pl.description.points) == 2
     assert sum(np.isclose(p.y, -2) for p in pl.description.points) == 2
     assert sum(np.isclose(p.z, 0) for p in pl.description.points) == 4
+    z = Vector(0, 0, 1)
+    for p1, p2, p3 in pl.description.faced_points():
+        lhs = Vector.from_points(p1, p2)
+        rhs = Vector.from_points(p1, p3)
+        assert lhs.cross(rhs).dot(z) > 0
 
 
 def test_segment_creation_1_layer():
@@ -22,6 +27,11 @@ def test_segment_creation_1_layer():
     assert len(seg.description.points) == 3
     assert Point(0, 0, 0) in seg.description.points
     assert sum(np.isclose(p.r, 5) for p in seg.description.points) == 2
+    z = Vector(0, 0, 1)
+    for p1, p2, p3 in seg.description.faced_points():
+        lhs = Vector.from_points(p1, p2)
+        rhs = Vector.from_points(p1, p3)
+        assert lhs.cross(rhs).dot(z) > 0
 
 
 def test_segment_creation_2_layer():
@@ -32,6 +42,11 @@ def test_segment_creation_2_layer():
     assert Point(0, 0, 0) in seg.description.points
     assert sum(np.isclose(p.r, 2) for p in seg.description.points) == 2
     assert sum(np.isclose(p.r, 4) for p in seg.description.points) == 3
+    z = Vector(0, 0, 1)
+    for p1, p2, p3 in seg.description.faced_points():
+        lhs = Vector.from_points(p1, p2)
+        rhs = Vector.from_points(p1, p3)
+        assert lhs.cross(rhs).dot(z) > 0
 
 
 def test_segment_creation_3_layer():
@@ -43,6 +58,11 @@ def test_segment_creation_3_layer():
     assert sum(np.isclose(p.r, 3) for p in seg.description.points) == 2
     assert sum(np.isclose(p.r, 6) for p in seg.description.points) == 3
     assert sum(np.isclose(p.r, 9) for p in seg.description.points) == 4
+    z = Vector(0, 0, 1)
+    for p1, p2, p3 in seg.description.faced_points():
+        lhs = Vector.from_points(p1, p2)
+        rhs = Vector.from_points(p1, p3)
+        assert lhs.cross(rhs).dot(z) > 0
 
 
 def test_create_circle_1_layer():
@@ -51,6 +71,11 @@ def test_create_circle_1_layer():
     assert len(circle.description.points) == 7
     assert Point(0, 0, 0) in circle.description.points
     assert sum(np.isclose(p.r, 5) for p in circle.description.points) == 6
+    z = Vector(0, 0, 1)
+    for p1, p2, p3 in circle.description.faced_points():
+        lhs = Vector.from_points(p1, p2)
+        rhs = Vector.from_points(p1, p3)
+        assert lhs.cross(rhs).dot(z) > 0
 
 
 def test_create_circle_3_layer():
@@ -61,6 +86,11 @@ def test_create_circle_3_layer():
     assert sum(np.isclose(p.r, 3) for p in circle.description.points) == 6
     assert sum(np.isclose(p.r, 6) for p in circle.description.points) == 12
     assert sum(np.isclose(p.r, 9) for p in circle.description.points) == 18
+    z = Vector(0, 0, 1)
+    for p1, p2, p3 in circle.description.faced_points():
+        lhs = Vector.from_points(p1, p2)
+        rhs = Vector.from_points(p1, p3)
+        assert lhs.cross(rhs).dot(z) > 0
 
 
 def test_tube_creation_1_layer():
@@ -71,6 +101,12 @@ def test_tube_creation_1_layer():
     assert sum(np.isclose(p.z, 5) for p in tube.description.points) == 6
     assert sum(np.isclose(p.r, 15) for p in tube.description.points) == 6
     assert sum(np.isclose(p.r, np.sqrt(250)) for p in tube.description.points) == 6
+    for p1, p2, p3 in tube.description.faced_points():
+        test = Vector.from_points(Point(0, 0, 0), p1)
+        lhs = Vector.from_points(p1, p2)
+        rhs = Vector.from_points(p1, p3)
+        assert lhs.cross(rhs).dot(test) > 0
+
 
 
 def test_tube_creation_3_layer():
@@ -85,6 +121,11 @@ def test_tube_creation_3_layer():
     assert sum(np.isclose(p.r, np.sqrt(34)) for p in tube.description.points) == 6
     assert sum(np.isclose(p.r, np.sqrt(61)) for p in tube.description.points) == 6
     assert sum(np.isclose(p.r, np.sqrt(106)) for p in tube.description.points) == 6
+    for p1, p2, p3 in tube.description.faced_points():
+        test = Vector.from_points(Point(0, 0, 0), p1)
+        lhs = Vector.from_points(p1, p2)
+        rhs = Vector.from_points(p1, p3)
+        assert lhs.cross(rhs).dot(test) > 0
 
 
 def test_tube_creation_2_layer():
@@ -97,6 +138,11 @@ def test_tube_creation_2_layer():
     assert sum(np.isclose(p.r, 5) for p in tube.description.points) == 12
     assert sum(np.isclose(p.r, np.sqrt(34)) for p in tube.description.points) == 12
     assert sum(np.isclose(p.r, np.sqrt(61)) for p in tube.description.points) == 12
+    for p1, p2, p3 in tube.description.faced_points():
+        test = Vector.from_points(Point(0, 0, 0), p1)
+        lhs = Vector.from_points(p1, p2)
+        rhs = Vector.from_points(p1, p3)
+        assert lhs.cross(rhs).dot(test) > 0
 
 
 def test_cylinder_creation_1_layer():
@@ -109,6 +155,17 @@ def test_cylinder_creation_1_layer():
     assert sum(np.isclose(p.r, 5) for p in c.description.points) == 6
     assert Point(0, 0, 2) in c.description.points
     assert sum(np.isclose(p.r, np.sqrt(29)) for p in c.description.points) == 6
+
+
+def test_cylinder_1_layer_normals():
+    c = Cylinder(radius=5, height=2, r_layer_num=1, h_layer_num=1)
+    c.move(z=-1)
+    c.accept_transformations()
+    for p1, p2, p3 in c.description.faced_points():
+        test = Vector.from_points(Point(0, 0, 0), p1)
+        lhs = Vector.from_points(p1, p2)
+        rhs = Vector.from_points(p1, p3)
+        assert lhs.cross(rhs).dot(test) > 0
 
 
 def test_cylinder_creation_2_layer():
@@ -127,6 +184,17 @@ def test_cylinder_creation_2_layer():
     assert sum(np.isclose(p.r, np.sqrt(52)) for p in c.description.points) == 12
 
 
+def test_cylinder_2_layer_normals():
+    c = Cylinder(radius=4, height=6, r_layer_num=2, h_layer_num=2)
+    c.move(z=-3)
+    c.accept_transformations()
+    for p1, p2, p3 in c.description.faced_points():
+        test = Vector.from_points(Point(0, 0, 0), p1)
+        lhs = Vector.from_points(p1, p2)
+        rhs = Vector.from_points(p1, p3)
+        assert lhs.cross(rhs).dot(test) > 0
+
+
 def test_cone_creation_1_layer():
     cone = Cone(radius=5, height=2, layer_num=1)
     assert len(cone.description.faces) == 12
@@ -135,6 +203,17 @@ def test_cone_creation_1_layer():
     assert Point(0, 0, 0) in cone.description.points
     assert Point(0, 0, 2) in cone.description.points
     assert sum(np.isclose(p.r, 5) for p in cone.description.points) == 6
+
+
+def test_cone_1_layer_normals():
+    cone = Cone(radius=5, height=2, layer_num=1)
+    cone.move(z=-0.1)
+    cone.accept_transformations()
+    for p1, p2, p3 in cone.description.faced_points():
+        test = Vector.from_points(Point(0, 0, 0), p1)
+        lhs = Vector.from_points(p1, p2)
+        rhs = Vector.from_points(p1, p3)
+        assert lhs.cross(rhs).dot(test) > 0
 
 
 def test_cone_creation_3_layer():
@@ -151,6 +230,17 @@ def test_cone_creation_3_layer():
     assert sum(np.isclose(p.z, 12) for p in cone.description.points) == 6
 
 
+def test_cone_3_layer_normals():
+    cone = Cone(radius=9, height=18, layer_num=3)
+    cone.move(z=-0.1)
+    cone.accept_transformations()
+    for p1, p2, p3 in cone.description.faced_points():
+        test = Vector.from_points(Point(0, 0, 0), p1)
+        lhs = Vector.from_points(p1, p2)
+        rhs = Vector.from_points(p1, p3)
+        assert lhs.cross(rhs).dot(test) > 0
+
+
 def test_cone_no_base_creation_1_layer():
     cone = ConeNoBase(radius=5, height=2, layer_num=1)
     assert len(cone.description.faces) == 6
@@ -158,6 +248,11 @@ def test_cone_no_base_creation_1_layer():
     assert sum(np.isclose(p.z, 0) for p in cone.description.points) == 6
     assert Point(0, 0, 2) in cone.description.points
     assert sum(np.isclose(p.r, 5) for p in cone.description.points) == 6
+    for p1, p2, p3 in cone.description.faced_points():
+        test = Vector.from_points(Point(0, 0, 0), p1)
+        lhs = Vector.from_points(p1, p2)
+        rhs = Vector.from_points(p1, p3)
+        assert lhs.cross(rhs).dot(test) > 0
 
 
 def test_cone_no_base_creation_3_layer():
@@ -169,6 +264,11 @@ def test_cone_no_base_creation_3_layer():
     assert sum(np.isclose(p.r, 9) for p in cone.description.points) == 18
     assert sum(np.isclose(p.z, 6) for p in cone.description.points) == 12
     assert sum(np.isclose(p.z, 12) for p in cone.description.points) == 6
+    for p1, p2, p3 in cone.description.faced_points():
+        test = Vector.from_points(Point(0, 0, 0), p1)
+        lhs = Vector.from_points(p1, p2)
+        rhs = Vector.from_points(p1, p3)
+        assert lhs.cross(rhs).dot(test) > 0
 
 
 def test_box_creation():
@@ -181,6 +281,11 @@ def test_box_creation():
     assert sum(np.isclose(p.y, 3) for p in box.description.points) == 4
     assert sum(np.isclose(p.z, -2) for p in box.description.points) == 4
     assert sum(np.isclose(p.z, 2) for p in box.description.points) == 4
+    for p1, p2, p3 in box.description.faced_points():
+        test = Vector.from_points(Point(0, 0, 0), p1)
+        lhs = Vector.from_points(p1, p2)
+        rhs = Vector.from_points(p1, p3)
+        assert lhs.cross(rhs).dot(test) > 0
 
 
 def test_sphere_creation_split_1():
@@ -188,6 +293,11 @@ def test_sphere_creation_split_1():
     assert len(sph.description.faces) == 8
     assert len(sph.description.points) == 6
     assert sum(np.isclose(p.r, 5) for p in sph.description.points) == 6
+    for p1, p2, p3 in sph.description.faced_points():
+        test = Vector.from_points(Point(0, 0, 0), p1)
+        lhs = Vector.from_points(p1, p2)
+        rhs = Vector.from_points(p1, p3)
+        assert lhs.cross(rhs).dot(test) > 0
 
 
 def test_sphere_creation_split_2():
@@ -195,6 +305,11 @@ def test_sphere_creation_split_2():
     assert len(sph.description.faces) == 32
     assert len(sph.description.points) == 18
     assert sum(np.isclose(p.r, 7) for p in sph.description.points) == 18
+    for p1, p2, p3 in sph.description.faced_points():
+        test = Vector.from_points(Point(0, 0, 0), p1)
+        lhs = Vector.from_points(p1, p2)
+        rhs = Vector.from_points(p1, p3)
+        assert lhs.cross(rhs).dot(test) > 0
 
 
 def test_sphere_creation_split_3():
@@ -202,6 +317,11 @@ def test_sphere_creation_split_3():
     assert len(sph.description.faces) == 128
     assert len(sph.description.points) == 66
     assert sum(np.isclose(p.r, 7) for p in sph.description.points) == 66
+    for p1, p2, p3 in sph.description.faced_points():
+        test = Vector.from_points(Point(0, 0, 0), p1)
+        lhs = Vector.from_points(p1, p2)
+        rhs = Vector.from_points(p1, p3)
+        assert lhs.cross(rhs).dot(test) > 0
 
 
 def test_world_add_object():

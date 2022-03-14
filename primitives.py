@@ -216,6 +216,10 @@ class FaceCollection:
         self.rotations['z'] += z
         return self
 
+    def invert(self) -> None:
+        '''Inverts orientation of all faces in the collection'''
+        self.faces = set(((f3, f2, f1) for (f1, f2, f3) in self.faces))
+
     def accept_transformations(self) -> None:
         '''This method applies saved transformations into current
             points collection. After this it clears all queued transformations

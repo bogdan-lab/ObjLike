@@ -11,9 +11,6 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from primitives import Point, FaceCollection, Angle
 
 
-# TODO think how to check that all face normals are correct
-# TODO add method to invert face normals
-
 # TODO delete objects from world?
 
 # TODO replace by itertools.pairwise when it is available
@@ -56,6 +53,9 @@ class Object:
 
     def save_to_file(self, filename: str) -> None:
         self.description.save_to_file(filename)
+
+    def invert(self) -> None:
+        self.description.invert()
 
     @classmethod
     def from_json_file(cls, filename: str) -> "Object":
@@ -119,15 +119,18 @@ class Box(Object):
         self.height = height
         self.depth = depth
         bot = Plane(width=width, height=depth).description.move(z=-height/2)
+        bot.invert()
         top = Plane(width=width, height=depth).description.move(z=height/2)
         right = Plane(width=height, height=depth).description
         right.rotate(y=Angle(np.pi/2)).move(x=width/2)
         left = Plane(width=height, height=depth).description
         left.rotate(y=Angle(np.pi/2)).move(x=-width/2)
+        left.invert()
         front = Plane(width=width, height=height).description
         front.rotate(x=Angle(np.pi/2)).move(y=-depth/2)
         back = Plane(width=width, height=height).description
         back.rotate(x=Angle(np.pi/2)).move(y=depth/2)
+        back.invert()
         for pl in (bot, top, right, left, front, back):
             pl.accept_transformations()
             self.description = FaceCollection.merge(self.description, pl)
@@ -146,9 +149,9 @@ class CircleSegment(Object):
     @staticmethod
     def _add_layer(description, prev: List[Point], curr: List[Point]) -> None:
         for (cl, cr), (pl, pr) in zip(pairwise(curr), pairwise(prev + [None])):
-            description.add_face(cl, pl, cr)
+            description.add_face(cr, pl, cl)
             if pr:
-                description.add_face(pr, cr, pl)
+                description.add_face(pl, cr, pr)
 
     @staticmethod
     def _build_segment_quant(phi_from: Angle, phi_to: Angle, radius: float,
@@ -202,8 +205,8 @@ class Tube(Object):
         iterator = zip(pairwise(curr_layer),
                        pairwise(prev_layer))
         for (cl, cr), (pl, pr) in iterator:
-            faces.add_face(cl, cr, pl)
-            faces.add_face(pl, cr, pr)
+            faces.add_face(pl, cr, cl)
+            faces.add_face(pr, cr, pl)
 
     def __init__(self, radius: float, height: float, r_layer_num: int,
                  h_layer_num: int) -> None:
@@ -235,6 +238,7 @@ class Cylinder(Object):
         self.r_layer_num = r_layer_num
         self.h_layer_num = h_layer_num
         bot_descr = Circle(radius, r_layer_num).description
+        bot_descr.invert()
         top_base = Circle(radius, r_layer_num).description.move(z=height)
         top_base.accept_transformations()
         heights = np.linspace(0, height, h_layer_num+1, endpoint=True)
@@ -271,6 +275,7 @@ class Cone(Object):
         self.height = height
         self.layer_num = layer_num
         bot_descr = Circle(radius, layer_num).description
+        bot_descr.invert()
         side_descr = ConeNoBase(radius, height, layer_num).description
         self.description = FaceCollection.merge(side_descr, bot_descr)
 
