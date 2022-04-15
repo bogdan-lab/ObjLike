@@ -37,6 +37,11 @@ def _select_points_with_r(points: Iterable[Point], radius: float,
             key=lambda p: p.phi)
 
 
+def _throw_if_le_zero(var, var_name):
+    if var <= 0:
+        raise ValueError(f"{var_name} is {var}, but should be larger than 0.")
+
+
 class Object:
 
     def __init__(self) -> None:
@@ -100,6 +105,8 @@ class Object:
 class Plane(Object):
     '''Simple rectangle in XY plane centered in point (0, 0, 0)'''
     def __init__(self, width: float, height: float) -> None:
+        _throw_if_le_zero(height, "height")
+        _throw_if_le_zero(width, "width")
         super().__init__()
         self.width = width
         self.height = height
@@ -114,6 +121,9 @@ class Plane(Object):
 class Box(Object):
     '''Simple box which diagonals crosses in (0, 0, 0)'''
     def __init__(self, width: float, height: float, depth: float) -> None:
+        _throw_if_le_zero(depth, "depth")
+        _throw_if_le_zero(height, "height")
+        _throw_if_le_zero(width, "width")
         super().__init__()
         self.width = width
         self.height = height
@@ -168,6 +178,10 @@ class CircleSegment(Object):
 
     def __init__(self, phi_from: Angle, phi_to: Angle, radius: float,
                  layer_num: int) -> None:
+        if not isinstance(layer_num, int):
+            raise TypeError("layer_num should be integer")
+        _throw_if_le_zero(radius, "radius")
+        _throw_if_le_zero(layer_num, "layer_num")
         if phi_to <= phi_from:
             raise ValueError("Incorrect range for the circcle segment.")
         super().__init__()
@@ -186,6 +200,10 @@ class CircleSegment(Object):
 class Circle(Object):
     '''Circle in xy plane with center in (0, 0, 0)'''
     def __init__(self, radius: float, layer_num: int) -> None:
+        if not isinstance(layer_num, int):
+            raise TypeError("layer_num should be integer")
+        _throw_if_le_zero(radius, "radius")
+        _throw_if_le_zero(layer_num, "layer_num")
         super().__init__()
         self.radius = radius
         self.layer_num = layer_num
@@ -210,6 +228,14 @@ class Tube(Object):
 
     def __init__(self, radius: float, height: float, r_layer_num: int,
                  h_layer_num: int) -> None:
+        if not isinstance(r_layer_num, int):
+            raise TypeError("r_layer_num should be integer")
+        if not isinstance(h_layer_num, int):
+            raise TypeError("h_layer_num should be integer")
+        _throw_if_le_zero(radius, "radius")
+        _throw_if_le_zero(height, "height")
+        _throw_if_le_zero(r_layer_num, "r_layer_num")
+        _throw_if_le_zero(h_layer_num, "h_layer_num")
         super().__init__()
         self.radius = radius
         self.height = height
@@ -232,6 +258,14 @@ class Cylinder(Object):
     '''
     def __init__(self, radius: float, height: float, r_layer_num: int,
                  h_layer_num: int) -> None:
+        if not isinstance(r_layer_num, int):
+            raise TypeError("r_layer_num should be integer")
+        if not isinstance(h_layer_num, int):
+            raise TypeError("h_layer_num should be integer")
+        _throw_if_le_zero(radius, "radius")
+        _throw_if_le_zero(height, "height")
+        _throw_if_le_zero(r_layer_num, "r_layer_num")
+        _throw_if_le_zero(h_layer_num, "h_layer_num")
         super().__init__()
         self.radius = radius
         self.height = height
@@ -256,6 +290,11 @@ class ConeNoBase(Object):
     '''Simple cone parallel to Z axis with base circle center in (0, 0, 0)
         but without base plane'''
     def __init__(self, radius: float, height: float, layer_num: int) -> None:
+        if not isinstance(layer_num, int):
+            raise TypeError("layer_num should be integer")
+        _throw_if_le_zero(radius, "radius")
+        _throw_if_le_zero(height, "height")
+        _throw_if_le_zero(layer_num, "layer_num")
         super().__init__()
         self.radius = radius
         self.height = height
@@ -270,6 +309,11 @@ class ConeNoBase(Object):
 class Cone(Object):
     '''Simple cone parallel to Z axis with base circle center in (0, 0, 0)'''
     def __init__(self, radius: float, height: float, layer_num: int) -> None:
+        if not isinstance(layer_num, int):
+            raise TypeError("layer_num should be integer")
+        _throw_if_le_zero(radius, "radius")
+        _throw_if_le_zero(height, "height")
+        _throw_if_le_zero(layer_num, "layer_num")
         super().__init__()
         self.radius = radius
         self.height = height
@@ -298,6 +342,10 @@ class Sphere(Object):
         return ((p1, ml, mb), (ml, mr, mb), (mb, mr, p3), (ml, p2, mr))
 
     def __init__(self, radius: float, split_num: int) -> None:
+        if not isinstance(split_num, int):
+            raise TypeError("split_num should be an integer")
+        _throw_if_le_zero(split_num, "split_num")
+        _throw_if_le_zero(radius, "radius")
         super().__init__()
         self.radius = radius
         self.split_num = split_num
