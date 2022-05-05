@@ -73,6 +73,7 @@ def main():
                 y=world.get_min_y() - tube.height/2)
     sphere.accept_transformations()
     world.add_object(sphere)
+    world.save_to_file("test.json")
     world.plot()
     plt.show()
 
